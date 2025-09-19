@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { RetellWebClient } from 'retell-client-js-sdk';
 
-export default function VoiceCallPage() {
+function VoiceCallContent() {
   const searchParams = useSearchParams();
   const [callState, setCallState] = useState<'connecting' | 'connected' | 'ended' | 'error'>('connecting');
   const [retellClient, setRetellClient] = useState<RetellWebClient | null>(null);
@@ -166,5 +166,13 @@ export default function VoiceCallPage() {
         {getStateContent()}
       </div>
     </div>
+  );
+}
+
+export default function VoiceCallPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>}>
+      <VoiceCallContent />
+    </Suspense>
   );
 }

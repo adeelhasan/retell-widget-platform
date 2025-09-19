@@ -3,13 +3,17 @@
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/lib/supabase';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Login() {
   const router = useRouter();
+  const [redirectTo, setRedirectTo] = useState<string>('');
 
   useEffect(() => {
+    // Set redirect URL only on client side
+    setRedirectTo(`${window.location.origin}/dashboard`);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         router.push('/dashboard');
@@ -29,13 +33,15 @@ export default function Login() {
           </p>
         </div>
         <div className="bg-card p-6 rounded-lg border">
-          <Auth
-            supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
-            providers={['google']}
-            redirectTo={`${window.location.origin}/dashboard`}
-            showLinks={true}
-          />
+          {redirectTo && (
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeSupa }}
+              providers={['google']}
+              redirectTo={redirectTo}
+              showLinks={true}
+            />
+          )}
         </div>
       </div>
     </div>

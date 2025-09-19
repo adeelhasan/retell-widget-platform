@@ -64,7 +64,7 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Embed Code for "{widget.name}"</DialogTitle>
+          <DialogTitle>Embed Code for &quot;{widget.name}&quot;</DialogTitle>
           <DialogDescription>
             Copy this code and paste it into your website where you want the voice widget to appear.
           </DialogDescription>
@@ -137,7 +137,7 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
             <h4 className="text-sm font-medium mb-2">Usage Instructions</h4>
             <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Copy the embed code above</li>
-              <li>Paste it into your website's HTML where you want the widget</li>
+              <li>Paste it into your website&apos;s HTML where you want the widget</li>
               <li>The widget will automatically initialize when the page loads</li>
               <li>Visitors can click the button to start a voice conversation</li>
             </ol>

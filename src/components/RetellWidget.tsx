@@ -40,11 +40,11 @@ export default function RetellWidget({ widgetId, buttonText = 'Start Voice Call'
       console.log("🤖 Agent stopped talking");
     });
 
-    retellClient.on("update", (update: any) => {
+    retellClient.on("update", (update: unknown) => {
       console.log("📝 Transcript update:", update);
     });
 
-    retellClient.on("error", (error: any) => {
+    retellClient.on("error", (error: unknown) => {
       console.error("❌ Retell error:", error);
       setCallState('error');
       setTimeout(() => {
