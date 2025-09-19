@@ -129,10 +129,39 @@ npm run typecheck    # TypeScript validation
 npm run lint         # Run ESLint
 ```
 
+## 🚀 Deployment
+
+### Deploy to Vercel
+
+1. **Push to GitHub**
+   ```bash
+   git remote add origin your-github-repo-url
+   git push -u origin main
+   ```
+
+2. **Deploy on Vercel**
+   - Visit [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Configure environment variables (see .env.example)
+   - Deploy
+
+3. **Required Environment Variables in Vercel**
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key  
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+   ```
+
+### Post-Deployment
+- Update widget test URLs to use your production domain
+- Test widget functionality from external websites
+- Configure custom domain if needed
+
 ## 🚀 Quick Start
 
 1. Start the development server: `npm run dev`
-2. Visit `http://localhost:3008` 
+2. Visit `http://localhost:3000` 
 3. Sign up for an account
 4. Create your first widget
 5. Copy the embed code and test it
