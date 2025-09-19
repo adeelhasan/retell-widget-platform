@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Widget Test Page</title>
+    <title>Widget Example - Retell AI Voice Integration</title>
     <style>
         * {
             margin: 0;
@@ -204,9 +204,9 @@
     <div class="container">
         <div class="logo">🎤</div>
         
-        <h1>Voice AI Test Page</h1>
+        <h1>Widget Integration Example</h1>
         <p class="subtitle">
-            Test your Retell AI widget integration in a clean, isolated environment
+            Complete example showing how to embed Retell AI voice widgets with metadata
         </p>
 
         <div class="widget-section">
@@ -218,16 +218,18 @@
             ============================================================
             -->
             
-            <!-- NEW SIMPLE EMBED CODE (NO DEPENDENCY ISSUES) -->
+            <!-- EXAMPLE EMBED CODE - REPLACE WITH YOUR ACTUAL VALUES -->
+            <!-- Get your widget ID from the dashboard after creating a widget -->
             <script 
-                src="http://localhost:3000/api/widget-simple" 
-                data-widget-id="b36cbed4-0f4f-4af0-9e4f-5e721bb4d7d5"
-                data-button-text="Open House Followup">
+                src="https://your-app-domain.vercel.app/api/widget-simple" 
+                data-widget-id="your-widget-id-from-dashboard"
+                data-button-text="Talk to AI Agent">
             </script>
-            <form class="retell-metadata" data-widget-id="b36cbed4-0f4f-4af0-9e4f-5e721bb4d7d5">
-                <input type="hidden" name="agent_name" value="Martina">
-                <input type="hidden" name="property_address" value="123 Main St, Anytown USA">
-                <input type="hidden" name="lead_source" value="Website">
+            <form class="retell-metadata" data-widget-id="your-widget-id-from-dashboard">
+                <!-- EXAMPLE METADATA - Customize these fields for your use case -->
+                <input type="hidden" name="agent_name" value="Your Agent Name">
+                <input type="hidden" name="customer_type" value="Premium">
+                <input type="hidden" name="source" value="Website">
             </form>
             
             <!-- 
@@ -236,9 +238,12 @@
             ============================================================
             -->
             
-            <p style="color: #64748b; font-size: 14px; margin-top: 16px;">
-                ↑ This widget now uses the official Retell SDK with real voice streaming!
-            </p>
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px; margin-top: 16px;">
+                <p style="color: #92400e; font-size: 14px; font-weight: 600; margin-bottom: 4px;">⚠️ This is an Example</p>
+                <p style="color: #92400e; font-size: 12px;">
+                    Replace <code>your-widget-id-from-dashboard</code> and <code>your-app-domain.vercel.app</code> with your actual values from the platform dashboard.
+                </p>
+            </div>
         </div>
 
         <div class="features">

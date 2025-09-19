@@ -22,7 +22,7 @@ export default function WidgetReactTest() {
           </div>
           
           <RetellWidget 
-            widgetId="b36cbed4-0f4f-4af0-9e4f-5e721bb4d7d5"
+            widgetId="example-widget-id-replace-with-yours"
             buttonText="Start Voice Call"
           />
           

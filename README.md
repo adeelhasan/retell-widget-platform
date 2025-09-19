@@ -86,29 +86,27 @@ Widget (JavaScript)    Security Layer
 ### Basic Widget
 ```html
 <script 
-  src="https://your-platform.com/widget.js" 
-  data-widget-id="your-widget-id">
+  src="https://your-app.vercel.app/api/widget-simple" 
+  data-widget-id="your-widget-id-from-dashboard">
 </script>
 ```
 
-### Widget with Custom Button Text
+### Widget with Custom Button Text and Metadata
 ```html
 <script 
-  src="https://your-platform.com/widget.js" 
-  data-widget-id="your-widget-id"
+  src="https://your-app.vercel.app/api/widget-simple" 
+  data-widget-id="your-widget-id-from-dashboard"
   data-button-text="Talk to Our AI Agent">
 </script>
+<form class="retell-metadata" data-widget-id="your-widget-id-from-dashboard">
+  <input type="hidden" name="customer_name" value="John Smith">
+  <input type="hidden" name="property_type" value="Condo">
+  <input type="hidden" name="lead_source" value="Website">
+</form>
 ```
 
-### Widget with Metadata
-```html
-<script 
-  src="https://your-platform.com/widget.js" 
-  data-widget-id="your-widget-id"
-  data-button-text="Get Property Information"
-  data-metadata='{"property_id": "123", "user_type": "premium"}'>
-</script>
-```
+### Complete Example
+See `public/widget-example.html` for a complete working example with styling and multiple metadata fields.
 
 ## 🔒 Security Features
 
@@ -119,7 +117,7 @@ Widget (JavaScript)    Security Layer
 
 ## 🧪 Testing
 
-Visit `http://localhost:3008/widget-demo.html` to test widget functionality.
+Visit `http://localhost:3000/widget-example.html` to see a complete integration example.
 
 ### Development Commands
 ```bash
@@ -170,8 +168,8 @@ npm run lint         # Run ESLint
 
 - `src/app/dashboard/` - Widget management dashboard
 - `src/app/api/` - REST API endpoints  
-- `public/widget.js` - Embeddable widget script
-- `public/widget-demo.html` - Demo page
+- `src/app/api/widget-simple/` - Embeddable widget script endpoint
+- `public/widget-example.html` - Complete integration example
 - `database-setup.sql` - Database schema
 
 ## 🛡️ Platform Limits
