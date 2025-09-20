@@ -164,6 +164,39 @@ npm run lint         # Run ESLint
 4. Create your first widget
 5. Copy the embed code and test it
 
+## 🔐 Authentication & Security
+
+This project includes **standardized authentication utilities** to ensure proper Supabase RLS compliance and prevent common authentication issues.
+
+### Key Authentication Files
+- `src/lib/auth-server.ts` - Server-side authentication utilities
+- `src/lib/with-auth.ts` - HOC wrappers for API routes  
+- `AUTHENTICATION.md` - **Complete authentication guide** (📖 **Copy this to future projects!**)
+
+### Quick Auth Example
+```typescript
+// Clean, secure API route with authentication
+import { withAuthAsync } from '@/lib/with-auth';
+
+async function getWidget(request, { params }, { user, supabase }) {
+  const { id } = await params;
+  
+  // RLS automatically enforced
+  const { data } = await supabase
+    .from('widgets')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
+    
+  return NextResponse.json(data);
+}
+
+export const GET = withAuthAsync(getWidget, { validateUUID: 'id' });
+```
+
+**→ See `AUTHENTICATION.md` for complete patterns and troubleshooting guide**
+
 ## 📁 Key Files
 
 - `src/app/dashboard/` - Widget management dashboard
@@ -171,6 +204,7 @@ npm run lint         # Run ESLint
 - `src/app/api/widget-simple/` - Embeddable widget script endpoint
 - `public/widget-example.html` - Complete integration example
 - `database-setup.sql` - Database schema
+- `AUTHENTICATION.md` - **Authentication best practices guide** 🔑
 
 ## 🛡️ Platform Limits
 
