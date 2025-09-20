@@ -171,7 +171,7 @@ This project includes **standardized authentication utilities** to ensure proper
 ### Key Authentication Files
 - `src/lib/auth-server.ts` - Server-side authentication utilities
 - `src/lib/with-auth.ts` - HOC wrappers for API routes  
-- `AUTHENTICATION.md` - **Complete authentication guide** (📖 **Copy this to future projects!**)
+- `docs/AUTHENTICATION.md` - **Complete authentication guide** (📖 **Copy this to future projects!**)
 
 ### Quick Auth Example
 ```typescript
@@ -195,7 +195,7 @@ async function getWidget(request, { params }, { user, supabase }) {
 export const GET = withAuthAsync(getWidget, { validateUUID: 'id' });
 ```
 
-**→ See `AUTHENTICATION.md` for complete patterns and troubleshooting guide**
+**→ See `docs/AUTHENTICATION.md` for complete patterns and troubleshooting guide**
 
 ## 📁 Key Files
 
@@ -204,7 +204,8 @@ export const GET = withAuthAsync(getWidget, { validateUUID: 'id' });
 - `src/app/api/widget-simple/` - Embeddable widget script endpoint
 - `public/widget-example.html` - Complete integration example
 - `database-setup.sql` - Database schema
-- `AUTHENTICATION.md` - **Authentication best practices guide** 🔑
+- `docs/AUTHENTICATION.md` - **Authentication best practices guide** 🔑
+- `CLAUDE.md` - **Claude Code instructions for this project** 🤖
 
 ## 🛡️ Platform Limits
 
