@@ -360,6 +360,10 @@ export async function GET() {
       if (widgetId && !script.dataset.initialized) {
         script.dataset.initialized = 'true';
         
+        // Get baseUrl from script src attribute
+        const scriptSrc = script.getAttribute('src');
+        const baseUrl = scriptSrc ? new URL(scriptSrc).origin : window.location.origin;
+        
         const container = document.createElement('div');
         if (customClass) {
           container.className = customClass;
@@ -369,7 +373,8 @@ export async function GET() {
         
         const widget = new RetellSimpleWidget(container, {
           widgetId,
-          buttonText
+          buttonText,
+          baseUrl
         });
         
         window.RetellWidgetLoader.widgets.push(widget);
