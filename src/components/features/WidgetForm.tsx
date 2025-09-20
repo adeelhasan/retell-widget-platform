@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Widget, CreateWidgetRequest, UpdateWidgetRequest } from '@/lib/types';
+import { Widget, CreateWidgetRequest } from '@/lib/types';
 
 interface WidgetFormProps {
   widget?: Widget;
-  onSubmit: (data: CreateWidgetRequest | UpdateWidgetRequest) => void;
+  onSubmit: (data: CreateWidgetRequest) => void;
   onCancel: () => void;
   loading?: boolean;
   mode?: 'create' | 'edit';

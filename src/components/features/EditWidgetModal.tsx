@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Widget, UpdateWidgetRequest } from '@/lib/types';
+import { Widget, CreateWidgetRequest, UpdateWidgetRequest } from '@/lib/types';
 import { WidgetForm } from './WidgetForm';
 import { apiClient } from '@/lib/api-client';
 
@@ -25,12 +25,22 @@ export function EditWidgetModal({ widget, open, onClose, onSuccess }: EditWidget
 
   if (!widget) return null;
 
-  const handleSubmit = async (data: UpdateWidgetRequest) => {
+  const handleSubmit = async (data: CreateWidgetRequest) => {
     try {
       setLoading(true);
       setError(null);
       
-      const updatedWidget = await apiClient.updateWidget(widget.id, data);
+      // Convert CreateWidgetRequest to UpdateWidgetRequest for the API
+      const updateData: UpdateWidgetRequest = {
+        name: data.name,
+        retell_api_key: data.retell_api_key,
+        agent_id: data.agent_id,
+        allowed_domain: data.allowed_domain,
+        button_text: data.button_text,
+        rate_limit_calls_per_hour: data.rate_limit_calls_per_hour
+      };
+      
+      const updatedWidget = await apiClient.updateWidget(widget.id, updateData);
       
       if (onSuccess) {
         onSuccess(updatedWidget);
