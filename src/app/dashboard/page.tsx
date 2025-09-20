@@ -10,6 +10,7 @@ import { WidgetGrid } from '@/components/sections/WidgetGrid';
 import { EmptyState } from '@/components/sections/EmptyState';
 import { WidgetForm } from '@/components/features/WidgetForm';
 import { EmbedCodeModal } from '@/components/features/EmbedCodeModal';
+import { EditWidgetModal } from '@/components/features/EditWidgetModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Widget, CreateWidgetRequest } from '@/lib/types';
@@ -24,6 +25,8 @@ export default function Dashboard() {
   const [showForm, setShowForm] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
   const [showEmbedModal, setShowEmbedModal] = useState(false);
+  const [editingWidget, setEditingWidget] = useState<Widget | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -93,6 +96,20 @@ export default function Dashboard() {
     setSelectedWidget(null);
   };
 
+  const handleEditWidget = (widget: Widget) => {
+    setEditingWidget(widget);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingWidget(null);
+  };
+
+  const handleEditSuccess = (updatedWidget: Widget) => {
+    setWidgets(prev => prev.map(w => w.id === updatedWidget.id ? updatedWidget : w));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -132,6 +149,7 @@ export default function Dashboard() {
         <WidgetGrid 
           widgets={widgets} 
           onDelete={handleDeleteWidget}
+          onEdit={handleEditWidget}
           onCopyEmbed={handleCopyEmbed}
         />
       ) : (
@@ -151,6 +169,13 @@ export default function Dashboard() {
         widget={selectedWidget}
         open={showEmbedModal}
         onClose={handleCloseEmbedModal}
+      />
+
+      <EditWidgetModal
+        widget={editingWidget}
+        open={showEditModal}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
       />
     </AppLayout>
   );

@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Widget, CreateWidgetRequest, RegisterCallRequest, RegisterCallResponse } from './types';
+import { Widget, CreateWidgetRequest, UpdateWidgetRequest, RegisterCallRequest, RegisterCallResponse } from './types';
 
 class ApiClient {
   private async getAuthToken(): Promise<string | null> {
@@ -58,6 +58,13 @@ class ApiClient {
 
   async getWidget(id: string): Promise<Widget> {
     return this.request<Widget>(`/api/widgets/${id}`);
+  }
+
+  async updateWidget(id: string, data: UpdateWidgetRequest): Promise<Widget> {
+    return this.request<Widget>(`/api/widgets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
   async deleteWidget(id: string): Promise<{ success: boolean }> {

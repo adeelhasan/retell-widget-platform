@@ -16,13 +16,20 @@ import {
 interface WidgetCardProps {
   widget: Widget;
   onDelete?: (id: string) => void;
+  onEdit?: (widget: Widget) => void;
   onCopyEmbed?: (widget: Widget) => void;
 }
 
-export function WidgetCard({ widget, onDelete, onCopyEmbed }: WidgetCardProps) {
+export function WidgetCard({ widget, onDelete, onEdit, onCopyEmbed }: WidgetCardProps) {
   const handleCopyEmbed = () => {
     if (onCopyEmbed) {
       onCopyEmbed(widget);
+    }
+  };
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(widget);
     }
   };
 
@@ -46,6 +53,10 @@ export function WidgetCard({ widget, onDelete, onCopyEmbed }: WidgetCardProps) {
             <DropdownMenuItem onClick={handleCopyEmbed}>
               <Copy className="mr-2 h-4 w-4" />
               Copy Embed Code
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleEdit}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Widget
             </DropdownMenuItem>
             <DropdownMenuItem>
               <ExternalLink className="mr-2 h-4 w-4" />

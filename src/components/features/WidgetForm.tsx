@@ -5,16 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Widget, CreateWidgetRequest } from '@/lib/types';
+import { Widget, CreateWidgetRequest, UpdateWidgetRequest } from '@/lib/types';
 
 interface WidgetFormProps {
   widget?: Widget;
-  onSubmit: (data: CreateWidgetRequest) => void;
+  onSubmit: (data: CreateWidgetRequest | UpdateWidgetRequest) => void;
   onCancel: () => void;
   loading?: boolean;
+  mode?: 'create' | 'edit';
 }
 
-export function WidgetForm({ widget, onSubmit, onCancel, loading }: WidgetFormProps) {
+export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create' }: WidgetFormProps) {
   const [formData, setFormData] = useState<CreateWidgetRequest>({
     name: widget?.name || '',
     retell_api_key: widget?.retell_api_key || '',
@@ -23,6 +24,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading }: WidgetFormPr
     button_text: widget?.button_text || 'Start Voice Demo',
     rate_limit_calls_per_hour: widget?.rate_limit_calls_per_hour || undefined
   });
+
+  const isEditMode = mode === 'edit' || !!widget;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +47,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading }: WidgetFormPr
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{widget ? 'Edit Widget' : 'Create New Widget'}</CardTitle>
+        <CardTitle>{isEditMode ? 'Edit Widget' : 'Create New Widget'}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -127,7 +130,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading }: WidgetFormPr
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : widget ? 'Update Widget' : 'Create Widget'}
+              {loading ? 'Saving...' : isEditMode ? 'Update Widget' : 'Create Widget'}
             </Button>
           </div>
         </form>

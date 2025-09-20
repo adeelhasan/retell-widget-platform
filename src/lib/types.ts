@@ -20,6 +20,15 @@ export interface CreateWidgetRequest {
   rate_limit_calls_per_hour?: number;
 }
 
+export interface UpdateWidgetRequest {
+  name?: string;
+  retell_api_key?: string;
+  agent_id?: string;
+  allowed_domain?: string;
+  button_text?: string;
+  rate_limit_calls_per_hour?: number;
+}
+
 export interface RegisterCallRequest {
   widget_id: string;
   metadata?: Record<string, unknown>;
