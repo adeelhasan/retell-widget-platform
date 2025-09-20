@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuthAsync } from '@/lib/with-auth';
+import { type AuthContext } from '@/lib/auth-server';
 import { UpdateWidgetRequest } from '@/lib/types';
 import { validateWidgetName, validateDomain, validateApiKey, validateAgentId } from '@/lib/utils-helpers';
 
@@ -7,7 +8,7 @@ import { validateWidgetName, validateDomain, validateApiKey, validateAgentId } f
 async function deleteWidget(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-  { user, supabase }: any
+  { user, supabase }: AuthContext
 ) {
   const { id: widgetId } = await params;
 
@@ -30,7 +31,7 @@ async function deleteWidget(
 async function getWidget(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-  { user, supabase }: any
+  { user, supabase }: AuthContext
 ) {
   const { id: widgetId } = await params;
 
@@ -57,7 +58,7 @@ async function getWidget(
 async function updateWidget(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-  { user, supabase }: any
+  { user, supabase }: AuthContext
 ) {
   const { id: widgetId } = await params;
 
@@ -83,7 +84,7 @@ async function updateWidget(
   }
 
   // Verify widget exists and belongs to user
-  const { data: existingWidget, error: fetchError } = await supabase
+  const { error: fetchError } = await supabase
     .from('widgets')
     .select('*')
     .eq('id', widgetId)

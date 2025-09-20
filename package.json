@@ -13,6 +13,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "pre-push": "npm run typecheck && npm run build",
+    "setup-hooks": "./scripts/setup-git-hooks.sh",
     "db:types": "npx supabase gen types typescript --project-id PROJECT_ID --schema public > src/lib/database.types.ts"
   },
   "dependencies": {
