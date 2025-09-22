@@ -125,6 +125,24 @@ npm run dev          # Start development server
 npm run build        # Build for production  
 npm run typecheck    # TypeScript validation
 npm run lint         # Run ESLint
+npm run pre-push     # Run pre-push checks (typecheck + build)
+npm run setup-hooks  # Set up git hooks for automated checks
+```
+
+### 🛠️ Git Hooks
+This project includes automated pre-push checks to prevent build failures:
+- **Type checking** with TypeScript
+- **Production build** validation
+- **ESLint** warnings (non-blocking)
+
+To set up git hooks after cloning:
+```bash
+npm run setup-hooks
+```
+
+The pre-push hook will run automatically before every `git push`. To bypass (not recommended):
+```bash
+git push --no-verify
 ```
 
 ## 🚀 Deployment

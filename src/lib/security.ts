@@ -27,16 +27,23 @@ export function isAllowedDomain(origin: string, allowedDomain: string): boolean 
     // Extract domain from URL if allowedDomain is a full URL
     let targetDomain = allowedDomain;
     try {
-      const allowedUrl = new URL(allowedDomain);
-      targetDomain = allowedUrl.hostname;
+      if (allowedDomain.startsWith('http://') || allowedDomain.startsWith('https://')) {
+        const allowedUrl = new URL(allowedDomain);
+        targetDomain = allowedUrl.hostname;
+      }
     } catch {
-      // allowedDomain is just a hostname, use as-is
+      // allowedDomain is just a hostname/pattern, use as-is
+    }
+    
+    // Check wildcard patterns
+    if (targetDomain.includes('*')) {
+      return matchesWildcardPattern(originHost, targetDomain);
     }
     
     // Exact match
     if (originHost === targetDomain) return true;
     
-    // Subdomain match
+    // Subdomain match (only for non-wildcard patterns)
     if (originHost.endsWith('.' + targetDomain)) return true;
     
     return false;
@@ -44,6 +51,29 @@ export function isAllowedDomain(origin: string, allowedDomain: string): boolean 
     console.error('Domain validation error:', error);
     return false;
   }
+}
+
+function matchesWildcardPattern(hostname: string, pattern: string): boolean {
+  // Handle *.domain.com patterns
+  if (pattern.startsWith('*.') && !pattern.endsWith('.*')) {
+    const baseDomain = pattern.slice(2); // Remove '*.'
+    return hostname.endsWith('.' + baseDomain) || hostname === baseDomain;
+  }
+  
+  // Handle *.domain.* patterns (wildcard TLD)
+  if (pattern.startsWith('*.') && pattern.endsWith('.*')) {
+    const domainPart = pattern.slice(2, -2); // Remove '*.' and '.*'
+    
+    // Check if hostname matches pattern: subdomain.domain.tld or domain.tld
+    const regex = new RegExp(`^([^.]+\\.)?${escapeRegex(domainPart)}\\.[^.]+$`);
+    return regex.test(hostname);
+  }
+  
+  return false;
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Simple in-memory rate limiter

@@ -13,12 +13,74 @@ export function validateWidgetName(name: string): boolean {
 }
 
 export function validateDomain(domain: string): boolean {
+  return validateDomainPattern(domain);
+}
+
+export function validateDomainPattern(domain: string): boolean {
+  if (!domain || typeof domain !== 'string') return false;
+  
+  const trimmed = domain.trim();
+  if (trimmed.length === 0) return false;
+  
+  // Handle full URLs - extract hostname
+  let hostname = trimmed;
   try {
-    new URL(domain);
-    return true;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      const url = new URL(trimmed);
+      hostname = url.hostname;
+    }
   } catch {
     return false;
   }
+  
+  // Special cases
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return true;
+  }
+  
+  // Wildcard patterns
+  if (hostname.includes('*')) {
+    return validateWildcardPattern(hostname);
+  }
+  
+  // Regular hostname validation
+  return validateHostname(hostname);
+}
+
+function validateWildcardPattern(pattern: string): boolean {
+  // Only allow * at the beginning of domains
+  if (!pattern.startsWith('*.')) return false;
+  
+  const afterWildcard = pattern.slice(2); // Remove '*.'
+  
+  // Pattern like *.domain.*
+  if (afterWildcard.includes('*')) {
+    // Only allow * at the end for TLD wildcard
+    if (!afterWildcard.endsWith('.*')) return false;
+    const domainPart = afterWildcard.slice(0, -2); // Remove '.*'
+    return validateHostname(domainPart);
+  }
+  
+  // Pattern like *.domain.com
+  return validateHostname(afterWildcard);
+}
+
+function validateHostname(hostname: string): boolean {
+  if (!hostname || hostname.length === 0) return false;
+  
+  // Basic hostname validation
+  const hostnameRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
+  if (!hostnameRegex.test(hostname)) return false;
+  
+  // Must have at least one dot (except single words like localhost)
+  if (!hostname.includes('.') && hostname !== 'localhost') {
+    // Allow single-word domains like "x.ai" style without dots
+    // But require at least 2 characters
+    return hostname.length >= 2;
+  }
+  
+  return true;
 }
 
 export function validateApiKey(apiKey: string): boolean {

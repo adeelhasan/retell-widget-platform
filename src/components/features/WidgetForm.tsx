@@ -90,12 +90,21 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
             <Label htmlFor="domain">Allowed Domain</Label>
             <Input 
               id="domain" 
-              type="url" 
-              placeholder="https://example.com" 
+              type="text" 
+              placeholder="domain.com or *.domain.com" 
               value={formData.allowed_domain}
               onChange={handleChange('allowed_domain')}
               required
             />
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>Supported formats:</p>
+              <ul className="ml-4 space-y-0.5">
+                <li>• <code className="bg-muted px-1 rounded">x.ai</code> - exact domain</li>
+                <li>• <code className="bg-muted px-1 rounded">*.x.ai</code> - any subdomain of x.ai</li>
+                <li>• <code className="bg-muted px-1 rounded">*.domain.*</code> - domain with any TLD</li>
+                <li>• <code className="bg-muted px-1 rounded">localhost</code> - for development</li>
+              </ul>
+            </div>
           </div>
           
           <div className="space-y-2">
