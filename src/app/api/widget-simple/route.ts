@@ -143,6 +143,16 @@ export async function GET() {
       try {
         this.setState('connecting');
         
+        // Check HTTPS requirement for microphone access
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+          throw new Error('Voice calls require HTTPS. Please use https:// instead of http://');
+        }
+        
+        // Check browser compatibility
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Your browser does not support microphone access. Please use a modern browser.');
+        }
+        
         // Request microphone permission
         console.log('🎤 Requesting microphone permission...');
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -179,8 +189,41 @@ export async function GET() {
         
       } catch (error) {
         console.error('❌ Call failed:', error);
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to start voice call. Please try again.';
+        
+        if (error.message.includes('HTTPS')) {
+          errorMessage = 'Voice calls require HTTPS. Please visit this page using https:// instead of http://';
+        } else if (error.message.includes('browser')) {
+          errorMessage = 'Your browser does not support voice calls. Please use Chrome, Firefox, or Safari.';
+        } else if (error.message.includes('microphone')) {
+          errorMessage = 'Microphone permission is required. Please allow microphone access and try again.';
+        } else if (error.message.includes('Domain not authorized')) {
+          errorMessage = 'This domain is not authorized for voice calls. Please contact the site administrator.';
+        }
+        
+        // Show error in button
+        const button = this.element.querySelector('.retell-embed-button');
+        if (button) {
+          const originalText = button.textContent;
+          button.textContent = errorMessage;
+          button.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+          button.style.color = 'white';
+          button.style.fontSize = '12px';
+          button.style.padding = '8px 16px';
+          
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '';
+            button.style.color = '';
+            button.style.fontSize = '';
+            button.style.padding = '';
+          }, 5000);
+        }
+        
         this.setState('error');
-        setTimeout(() => this.setState('idle'), 3000);
+        setTimeout(() => this.setState('idle'), 5000);
       }
     }
     
@@ -394,10 +437,13 @@ export async function GET() {
 
   return new NextResponse(widgetScript, {
     headers: {
-      'Content-Type': 'application/javascript',
+      'Content-Type': 'application/javascript; charset=utf-8',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin',
     },
   });
 }
