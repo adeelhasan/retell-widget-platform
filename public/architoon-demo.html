@@ -289,7 +289,95 @@
                 Copy the embed code above and use it on any website for instant voice AI integration.
             </p>
         </div>
+
+        <!-- Debug Panel for iOS Chrome Troubleshooting -->
+        <div id="debug-panel" style="
+            margin-top: 30px;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        ">
+            <div style="color: #ffff00; font-weight: bold; margin-bottom: 10px;">🔍 DEBUG LOG (iOS Chrome Troubleshooting)</div>
+            <div id="debug-log">Initializing debug panel...</div>
+        </div>
     </div>
+
+    <script>
+        // Debug logger for iOS Chrome troubleshooting
+        window.debugLog = function(message, type = 'info') {
+            const logElement = document.getElementById('debug-log');
+            if (!logElement) return;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#00ff00',
+                error: '#ff4444',
+                warning: '#ffaa00',
+                success: '#00ffaa'
+            };
+            
+            const logEntry = document.createElement('div');
+            logEntry.style.color = colors[type] || colors.info;
+            logEntry.style.marginBottom = '5px';
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        };
+
+        // Log browser info immediately
+        setTimeout(() => {
+            debugLog('=== BROWSER INFO ===', 'warning');
+            debugLog(`User Agent: ${navigator.userAgent}`);
+            debugLog(`Platform: ${navigator.platform}`);
+            debugLog(`URL: ${window.location.href}`);
+            debugLog(`Protocol: ${window.location.protocol}`);
+            debugLog(`Is HTTPS: ${window.location.protocol === 'https:'}`);
+            
+            // Check iOS detection
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            debugLog(`Is iOS: ${isIOS}`, isIOS ? 'warning' : 'info');
+            
+            // Check microphone support
+            debugLog('=== MICROPHONE SUPPORT ===', 'warning');
+            debugLog(`navigator.mediaDevices exists: ${!!navigator.mediaDevices}`);
+            debugLog(`getUserMedia exists: ${!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)}`);
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+                navigator.mediaDevices.enumerateDevices()
+                    .then(devices => {
+                        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+                        debugLog(`Audio input devices found: ${audioInputs.length}`);
+                        audioInputs.forEach((device, i) => {
+                            debugLog(`  Device ${i+1}: ${device.label || 'Unknown'}`);
+                        });
+                    })
+                    .catch(err => debugLog(`Device enumeration failed: ${err.message}`, 'error'));
+            }
+            
+            debugLog('=== READY FOR WIDGET TEST ===', 'success');
+        }, 500);
+
+        // Override console.log to also log to debug panel
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            debugLog(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            debugLog('ERROR: ' + args.join(' '), 'error');
+        };
+    </script>
 
 </body>
 </html>
