@@ -204,7 +204,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">MIC</div>
         
         <h1>Widget Integration Example</h1>
         <p class="subtitle">
@@ -242,7 +241,7 @@
             -->
             
             <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px; margin-top: 16px;">
-                <p style="color: #92400e; font-size: 14px; font-weight: 600; margin-bottom: 4px;"><strong>!</strong> Demo Widget (Non-Functional)</p>
+                <p style="color: #92400e; font-size: 14px; font-weight: 600; margin-bottom: 4px;">⚠️ Demo Widget (Non-Functional)</p>
                 <p style="color: #92400e; font-size: 12px; margin-bottom: 8px;">
                     This is a placeholder widget ID. To make it functional:
                 </p>
@@ -257,26 +256,26 @@
 
         <div class="features">
             <div class="feature">
-                <div class="feature-icon">SEC</div>
+                <div class="feature-icon">🔒</div>
                 <h3>Secure</h3>
                 <p>Domain verification ensures your widget only works on authorized sites</p>
             </div>
             
             <div class="feature">
-                <div class="feature-icon">FAST</div>
+                <div class="feature-icon">⚡</div>
                 <h3>Fast</h3>
                 <p>Lightweight script loads instantly and connects quickly to voice AI</p>
             </div>
             
             <div class="feature">
-                <div class="feature-icon">STYLE</div>
+                <div class="feature-icon">🎨</div>
                 <h3>Customizable</h3>
                 <p>Configurable button text, metadata, and styling options</p>
             </div>
         </div>
 
         <div class="metadata-info">
-            <h4><span style="color: green; font-weight: bold;">✓</span> Ready for Production</h4>
+            <h4>✅ Ready for Production</h4>
             <p>
                 This widget uses the official Retell SDK with proper bundling and real voice streaming.
                 Simply copy the embed code above and paste it into any website for instant voice AI integration.
@@ -342,7 +341,10 @@
             
             // Check iOS detection
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
             debugLog(`Is iOS: ${isIOS}`, isIOS ? 'warning' : 'info');
+            debugLog(`Is Chrome: ${isChrome}`, isChrome ? 'warning' : 'info');
+            debugLog(`Is iOS Chrome: ${isIOS && isChrome}`, (isIOS && isChrome) ? 'error' : 'info');
             
             // Check microphone support
             debugLog('=== MICROPHONE SUPPORT ===', 'warning');
@@ -361,6 +363,15 @@
                     .catch(err => debugLog(`Device enumeration failed: ${err.message}`, 'error'));
             }
             
+            // Add iOS Chrome specific guidance
+            if (isIOS && isChrome) {
+                debugLog('=== iOS CHROME DETECTED ===', 'error');
+                debugLog('⚠️  IMPORTANT: If voice calls fail with "NotAllowedError":', 'warning');
+                debugLog('📱 Go to: iPhone Settings > Privacy & Security > Microphone', 'warning');
+                debugLog('🔧 Find "Chrome" and make sure it is ENABLED', 'warning');
+                debugLog('🔄 Refresh this page after enabling microphone access', 'warning');
+            }
+            
             debugLog('=== READY FOR WIDGET TEST ===', 'success');
         }, 500);
 
@@ -375,7 +386,24 @@
         
         console.error = function(...args) {
             originalError.apply(console, args);
-            debugLog('ERROR: ' + args.join(' '), 'error');
+            const errorMsg = args.join(' ');
+            debugLog('ERROR: ' + errorMsg, 'error');
+            
+            // Special handling for NotAllowedError on iOS Chrome
+            if (errorMsg.includes('NotAllowedError')) {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
+                
+                if (isIOS && isChrome) {
+                    debugLog('', 'error');
+                    debugLog('💡 SOLUTION FOR iOS CHROME USERS:', 'warning');
+                    debugLog('1. Open iPhone Settings app', 'warning');
+                    debugLog('2. Go to Privacy & Security > Microphone', 'warning');
+                    debugLog('3. Find "Chrome" in the app list', 'warning');
+                    debugLog('4. Toggle Chrome microphone access ON', 'warning');
+                    debugLog('5. Refresh this page and try again', 'warning');
+                }
+            }
         };
     </script>
 
