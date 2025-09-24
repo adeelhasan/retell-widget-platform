@@ -205,9 +205,9 @@
 <body>
     <div class="container">
         
-        <h1>Widget Integration Example</h1>
+        <h1>Open House Pro Widget Demo</h1>
         <p class="subtitle">
-            Complete example showing how to embed Retell AI voice widgets with metadata
+            Live demonstration of Retell AI voice integration for real estate professionals
         </p>
 
         <div class="widget-section">
@@ -240,18 +240,6 @@
             ============================================================
             -->
             
-            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px; margin-top: 16px;">
-                <p style="color: #92400e; font-size: 14px; font-weight: 600; margin-bottom: 4px;">⚠️ Demo Widget (Non-Functional)</p>
-                <p style="color: #92400e; font-size: 12px; margin-bottom: 8px;">
-                    This is a placeholder widget ID. To make it functional:
-                </p>
-                <ol style="color: #92400e; font-size: 12px; margin-left: 16px; line-height: 1.4;">
-                    <li>Go to <a href="/dashboard" style="color: #d97706; text-decoration: underline;">Dashboard</a></li>
-                    <li>Create a widget with domain: <code>https://retell-widget-platform.vercel.app</code></li>
-                    <li>Replace <code>your-widget-id-here</code> with your actual widget ID</li>
-                    <li>The widget will then connect to your Retell AI agent</li>
-                </ol>
-            </div>
         </div>
 
         <div class="features">
@@ -274,40 +262,47 @@
             </div>
         </div>
 
-        <div class="metadata-info">
-            <h4>✅ Ready for Production</h4>
-            <p>
-                This widget uses the official Retell SDK with proper bundling and real voice streaming.
-                Simply copy the embed code above and paste it into any website for instant voice AI integration.
-            </p>
-        </div>
-
-        <div class="footer">
-            <p>
-                <strong>Ready to use:</strong> This widget is fully functional with real voice streaming.
-                Copy the embed code above and use it on any website for instant voice AI integration.
-            </p>
-        </div>
 
         <!-- Debug Panel for iOS Chrome Troubleshooting -->
-        <div id="debug-panel" style="
-            margin-top: 30px;
-            padding: 20px;
-            background: #1a1a1a;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            border-radius: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #333;
-        ">
-            <div style="color: #ffff00; font-weight: bold; margin-bottom: 10px;">🔍 DEBUG LOG (iOS Chrome Troubleshooting)</div>
-            <div id="debug-log">Initializing debug panel...</div>
+        <div style="margin-top: 30px;">
+            <button onclick="toggleDebug()" style="
+                background: #333;
+                color: #ffff00;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                font-weight: bold;
+            ">🔍 Toggle Debug Console</button>
+            
+            <div id="debug-panel" style="
+                display: none;
+                margin-top: 10px;
+                padding: 20px;
+                background: #1a1a1a;
+                color: #00ff00;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                border-radius: 8px;
+                max-height: 300px;
+                overflow-y: auto;
+                border: 1px solid #333;
+            ">
+                <div style="color: #ffff00; font-weight: bold; margin-bottom: 10px;">🔍 DEBUG LOG (iOS Chrome Troubleshooting)</div>
+                <div id="debug-log">Initializing debug panel...</div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Toggle debug panel visibility
+        function toggleDebug() {
+            const panel = document.getElementById('debug-panel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
         // Debug logger for iOS Chrome troubleshooting
         window.debugLog = function(message, type = 'info') {
             const logElement = document.getElementById('debug-log');
