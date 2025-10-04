@@ -22,11 +22,15 @@ function isPrivateIP(hostname: string): boolean {
 }
 
 export function isAllowedDomain(origin: string, allowedDomain: string): boolean {
-  if (!origin || !allowedDomain) return false;
+  if (!origin || !allowedDomain) {
+    console.log('❌ isAllowedDomain: Missing origin or allowedDomain', { origin, allowedDomain });
+    return false;
+  }
 
   try {
     const originUrl = new URL(origin);
     const originHost = originUrl.hostname;
+    console.log('🔍 isAllowedDomain parsing:', { origin, originHost, allowedDomain });
 
     // Handle localhost
     if (allowedDomain === 'localhost' && originHost === 'localhost') {
@@ -62,14 +66,19 @@ export function isAllowedDomain(origin: string, allowedDomain: string): boolean 
     } catch {
       // allowedDomain is just a hostname/pattern, use as-is
     }
-    
+
+    console.log('🎯 Domain comparison:', { originHost, targetDomain, match: originHost === targetDomain });
+
     // Check wildcard patterns
     if (targetDomain.includes('*')) {
       return matchesWildcardPattern(originHost, targetDomain);
     }
-    
+
     // Exact match
-    if (originHost === targetDomain) return true;
+    if (originHost === targetDomain) {
+      console.log('✅ Exact match succeeded');
+      return true;
+    }
     
     // Subdomain match (only for non-wildcard patterns)
     if (originHost.endsWith('.' + targetDomain)) return true;
