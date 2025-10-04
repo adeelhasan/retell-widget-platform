@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { isAllowedDomain } from '@/lib/security';
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,29 +95,4 @@ export async function GET(request: NextRequest) {
     console.error('Widget config error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
-
-function isAllowedDomain(origin: string | null, allowedDomain: string): boolean {
-  if (!origin || !allowedDomain) return false;
-  
-  const originHost = new URL(origin).hostname;
-  
-  // Handle exact matches
-  if (originHost === allowedDomain) return true;
-  
-  // Handle wildcard patterns
-  if (allowedDomain.includes('*')) {
-    const pattern = allowedDomain
-      .replace(/\./g, '\\.')
-      .replace(/\*/g, '.*');
-    const regex = new RegExp(`^${pattern}$`);
-    return regex.test(originHost);
-  }
-  
-  // Handle localhost for development
-  if (allowedDomain === 'localhost' && (originHost === 'localhost' || originHost.startsWith('127.0.0.1'))) {
-    return true;
-  }
-  
-  return false;
 }
