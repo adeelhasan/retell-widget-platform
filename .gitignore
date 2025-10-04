@@ -50,3 +50,6 @@ widget-screenshot.*
 public/widget-*-test.html
 public/multiple-widgets-test.html
 public/widget-demo.html
+
+#mcp
+.mcp.json

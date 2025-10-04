@@ -64,7 +64,19 @@ async function updateWidget(
 
   // Parse request body
   const body: UpdateWidgetRequest = await request.json();
-  const { name, retell_api_key, agent_id, allowed_domain, button_text, rate_limit_calls_per_hour } = body;
+  const {
+    name,
+    retell_api_key,
+    agent_id,
+    allowed_domain,
+    button_text,
+    rate_limit_calls_per_hour,
+    widget_type,
+    display_text,
+    agent_persona,
+    opening_message,
+    outbound_phone_number
+  } = body;
 
   // Validate input - only validate fields that are provided
   if (name !== undefined && !validateWidgetName(name)) {
@@ -107,6 +119,11 @@ async function updateWidget(
   if (allowed_domain !== undefined) updateData.allowed_domain = allowed_domain;
   if (button_text !== undefined) updateData.button_text = button_text;
   if (rate_limit_calls_per_hour !== undefined) updateData.rate_limit_calls_per_hour = rate_limit_calls_per_hour;
+  if (widget_type !== undefined) updateData.widget_type = widget_type;
+  if (display_text !== undefined) updateData.display_text = display_text;
+  if (agent_persona !== undefined) updateData.agent_persona = agent_persona;
+  if (opening_message !== undefined) updateData.opening_message = opening_message;
+  if (outbound_phone_number !== undefined) updateData.outbound_phone_number = outbound_phone_number;
 
   // Update widget (RLS policy ensures user can only update their own widgets)
   const { data: widget, error } = await supabase

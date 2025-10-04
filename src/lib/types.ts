@@ -1,3 +1,5 @@
+export type WidgetType = 'inbound_web' | 'inbound_phone' | 'outbound_phone' | 'outbound_web';
+
 export interface Widget {
   id: string;
   user_id: string;
@@ -8,6 +10,12 @@ export interface Widget {
   button_text: string;
   rate_limit_calls_per_hour: number | null;
   rate_limit_enabled: boolean;
+  widget_type: WidgetType;
+  display_text?: string;
+  agent_persona?: string;
+  opening_message?: string;
+  inbound_phone_number?: string;
+  outbound_phone_number?: string;
   created_at: string;
 }
 
@@ -18,6 +26,11 @@ export interface CreateWidgetRequest {
   allowed_domain: string;
   button_text?: string;
   rate_limit_calls_per_hour?: number;
+  widget_type?: WidgetType;
+  display_text?: string;
+  agent_persona?: string;
+  opening_message?: string;
+  outbound_phone_number?: string;
 }
 
 export interface UpdateWidgetRequest {
@@ -27,6 +40,11 @@ export interface UpdateWidgetRequest {
   allowed_domain?: string;
   button_text?: string;
   rate_limit_calls_per_hour?: number;
+  widget_type?: WidgetType;
+  display_text?: string;
+  agent_persona?: string;
+  opening_message?: string;
+  outbound_phone_number?: string;
 }
 
 export interface RegisterCallRequest {
@@ -42,4 +60,14 @@ export interface RegisterCallResponse {
 export interface ApiError {
   error: string;
   details?: string;
+}
+
+export interface PhoneVerification {
+  id: string;
+  phone_number: string;
+  verification_code: string;
+  widget_id: string;
+  verified_at?: string;
+  expires_at: string;
+  created_at: string;
 }

@@ -210,37 +210,65 @@
             Live demonstration of Retell AI voice integration for real estate professionals
         </p>
 
+        <!-- Widget 1: Inbound Web Call - Sales Department
         <div class="widget-section">
-            <div class="widget-label">Your Widget</div>
-            
-            <!-- 
-            ============================================================
-            REPLACE THIS SECTION WITH YOUR EMBED CODE
-            ============================================================
-            -->
-            
-            <!-- EXAMPLE EMBED CODE - REPLACE WITH YOUR ACTUAL VALUES -->
-            <!-- Get your widget ID from the dashboard after creating a widget -->
-            <script 
-            src="https://retell-widget-platform.vercel.app/api/widget-simple" 
-            data-widget-id="d8d6fb2a-b04e-4a6f-ad7e-5f223e6f90bb"
-          ></script>
+            <div class="widget-label">🎤 Inbound Web Widget - Sales Department</div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                Click to start a voice conversation in your browser with our sales AI assistant
+            </p>
 
-          <form class="retell-metadata" data-widget-id="d8d6fb2a-b04e-4a6f-ad7e-5f223e6f90bb">
-            <input type="hidden" name="agent_name" value="Demo Agent">
-            <input type="hidden" name="property_type" value="Example Property">
-            <input type="hidden" name="lead_source" value="Website Demo">
-        </form>
-        
-            
-            
-            <!-- 
-            ============================================================
-            END EMBED CODE SECTION
-            ============================================================
-            -->
-            
+            <script
+                src="/api/widget-simple"
+                data-widget-id="d8d6fb2a-b04e-4a6f-ad7e-5f223e6f90bb"
+                data-button-text="Talk to Sales AI"
+            ></script>
+
+            <form class="retell-metadata" data-widget-id="d8d6fb2a-b04e-4a6f-ad7e-5f223e6f90bb">
+                <input type="hidden" name="department" value="Sales">
+                <input type="hidden" name="property_type" value="Luxury Condo">
+                <input type="hidden" name="lead_source" value="Demo Page - Sales">
+            </form>
         </div>
+ -->
+        <!-- Widget 2: Inbound Web Call - Support Department -->
+        <div class="widget-section">
+            <div class="widget-label">🎤 Inbound Web Widget - Support Department</div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                Get instant support through voice - browser-based conversation with support AI
+            </p>
+
+            <script
+                src="/api/widget-simple"
+                data-widget-id="5e925c22-1f74-4c94-9192-820e6e8ed04e"
+            ></script>
+
+            <form class="retell-metadata" data-widget-id="5e925c22-1f74-4c94-9192-820e6e8ed04e">
+                <input type="hidden" name="department" value="Support">
+                <input type="hidden" name="issue_type" value="Technical Question">
+                <input type="hidden" name="lead_source" value="Demo Page - Support">
+            </form>
+        </div>
+
+        <!-- Widget 3: Outbound Phone Call - Callback Request 
+        <div class="widget-section">
+            <div class="widget-label">📱 Outbound Phone Widget - Request Callback</div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                Enter your phone number to receive a call from our AI assistant within seconds
+            </p>
+
+            <script
+                src="/api/widget-simple"
+                data-widget-id="706c5b92-4465-413a-b782-b2991cf51eda"
+                data-button-text="Call Me Now"
+            ></script>
+
+            <form class="retell-metadata" data-widget-id="706c5b92-4465-413a-b782-b2991cf51eda">
+                <input type="hidden" name="department" value="Sales">
+                <input type="hidden" name="callback_reason" value="Product Interest">
+                <input type="hidden" name="lead_source" value="Demo Page - Callback">
+            </form>
+        </div>
+        -->
 
         <div class="features">
             <div class="feature">

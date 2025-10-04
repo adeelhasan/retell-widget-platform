@@ -1,14 +1,42 @@
 import { CONFIG } from './config';
 
+function isPrivateIP(hostname: string): boolean {
+  // Check if hostname is a private IP address
+  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  const match = hostname.match(ipv4Regex);
+
+  if (!match) return false;
+
+  const [, a, b, c, d] = match.map(Number);
+
+  // Validate IP octets (0-255)
+  if (a > 255 || b > 255 || c > 255 || d > 255) return false;
+
+  // Check private IP ranges
+  return (
+    a === 127 || // 127.0.0.0/8 - Loopback
+    a === 10 || // 10.0.0.0/8 - Private
+    (a === 172 && b >= 16 && b <= 31) || // 172.16.0.0/12 - Private
+    (a === 192 && b === 168) // 192.168.0.0/16 - Private
+  );
+}
+
 export function isAllowedDomain(origin: string, allowedDomain: string): boolean {
   if (!origin || !allowedDomain) return false;
-  
+
   try {
     const originUrl = new URL(origin);
     const originHost = originUrl.hostname;
-    
+
     // Handle localhost
     if (allowedDomain === 'localhost' && originHost === 'localhost') {
+      return true;
+    }
+
+    // Allow private IPs in development when allowed_domain is localhost
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    if (allowedDomain === 'localhost' && isPrivateIP(originHost) && isDevelopment) {
+      console.log(`✅ Allowing private IP ${originHost} in development mode`);
       return true;
     }
     

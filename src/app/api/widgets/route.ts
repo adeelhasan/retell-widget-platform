@@ -93,7 +93,19 @@ export async function POST(request: NextRequest) {
     // Parse request body
     console.log('Parsing request body');
     const body: CreateWidgetRequest = await request.json();
-    const { name, retell_api_key, agent_id, allowed_domain, button_text, rate_limit_calls_per_hour } = body;
+    const {
+      name,
+      retell_api_key,
+      agent_id,
+      allowed_domain,
+      button_text,
+      rate_limit_calls_per_hour,
+      widget_type,
+      display_text,
+      agent_persona,
+      opening_message,
+      outbound_phone_number
+    } = body;
     
     console.log('Request body parsed:', { name, agent_id, allowed_domain, button_text });
 
@@ -143,7 +155,12 @@ export async function POST(request: NextRequest) {
         agent_id,
         allowed_domain,
         button_text: button_text || 'Start Voice Demo',
-        rate_limit_calls_per_hour
+        rate_limit_calls_per_hour,
+        widget_type: widget_type || 'inbound_web',
+        display_text,
+        agent_persona,
+        opening_message,
+        outbound_phone_number
       })
       .select()
       .single();
