@@ -74,9 +74,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Call Retell AI API to register the call
+    // Convert all metadata values to strings for Retell API
+    const stringifyMetadata = (obj: Record<string, unknown>): Record<string, string> => {
+      const result: Record<string, string> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (value === null || value === undefined) {
+          result[key] = '';
+        } else if (typeof value === 'object') {
+          result[key] = JSON.stringify(value);
+        } else {
+          result[key] = String(value);
+        }
+      }
+      return result;
+    };
+
+    const cleanMetadata = metadata ? stringifyMetadata(metadata) : {};
+
     console.log('📞 Calling Retell AI API to create call...');
-    
+    console.log('📊 Metadata being sent:', cleanMetadata);
+
     try {
       const retellResponse = await fetch('https://api.retellai.com/v2/create-web-call', {
         method: 'POST',
@@ -86,8 +103,8 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           agent_id: widget.agent_id,
-          metadata: metadata || {},
-          retell_llm_dynamic_variables: metadata || {}
+          metadata: cleanMetadata,
+          retell_llm_dynamic_variables: cleanMetadata
         }),
         signal: AbortSignal.timeout(CONFIG.SECURITY.RETELL_TIMEOUT_MS),
       });

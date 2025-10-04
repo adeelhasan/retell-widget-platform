@@ -93,7 +93,17 @@ export async function POST(request: NextRequest) {
 
     // Call Retell AI API to initiate outbound call
     console.log('📞 Calling Retell AI API to initiate outbound call to:', formattedPhone);
-    
+
+    const retellPayload = {
+      from_number: widget.outbound_phone_number,
+      to_number: formattedPhone,
+      override_agent_id: widget.agent_id,
+      metadata: mergedMetadata,
+      retell_llm_dynamic_variables: mergedMetadata
+    };
+
+    console.log('📤 Retell API payload:', JSON.stringify(retellPayload, null, 2));
+
     try {
       const retellResponse = await fetch('https://api.retellai.com/v2/create-phone-call', {
         method: 'POST',
@@ -101,13 +111,7 @@ export async function POST(request: NextRequest) {
           'Authorization': `Bearer ${widget.retell_api_key}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          agent_id: widget.agent_id,
-          to_number: formattedPhone,
-          from_number: widget.outbound_phone_number,
-          metadata: mergedMetadata,
-          retell_llm_dynamic_variables: mergedMetadata
-        }),
+        body: JSON.stringify(retellPayload),
         signal: AbortSignal.timeout(CONFIG.SECURITY.RETELL_TIMEOUT_MS),
       });
 
