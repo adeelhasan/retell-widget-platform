@@ -36,7 +36,22 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    // Trim all string fields to prevent whitespace issues
+    const trimmedData = {
+      ...formData,
+      name: formData.name.trim(),
+      retell_api_key: formData.retell_api_key.trim(),
+      agent_id: formData.agent_id.trim(),
+      allowed_domain: formData.allowed_domain.trim(),
+      button_text: formData.button_text?.trim() || '',
+      display_text: formData.display_text?.trim(),
+      agent_persona: formData.agent_persona?.trim(),
+      opening_message: formData.opening_message?.trim(),
+      outbound_phone_number: formData.outbound_phone_number?.trim()
+    };
+
+    onSubmit(trimmedData);
   };
 
   const handleChange = (field: keyof CreateWidgetRequest) => (
