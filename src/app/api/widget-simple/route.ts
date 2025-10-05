@@ -153,18 +153,31 @@ export async function GET() {
             'Origin': window.location.origin
           }
         });
-        
+
         if (!response.ok) {
-          throw new Error(\`Failed to load widget config: \${response.status}\`);
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          console.error('Failed to load widget config:', response.status, errorData);
+
+          // Set error state instead of falling back
+          this.widgetConfig = {
+            widget_type: 'error',
+            error_message: errorData.error || \`Failed to load widget (status: \${response.status})\`,
+            error_status: response.status
+          };
+          return;
         }
-        
+
         this.widgetConfig = await response.json();
         console.log('🔧 Widget config loaded:', this.widgetConfig);
         this.buttonText = this.config.buttonText || this.widgetConfig.button_text || this.getDefaultButtonText();
-        
+
       } catch (error) {
         console.error('Failed to load widget config:', error);
-        this.widgetConfig = { widget_type: 'inbound_web' }; // fallback
+        this.widgetConfig = {
+          widget_type: 'error',
+          error_message: 'Unable to load widget configuration. Please check your network connection.',
+          error_details: error.message
+        };
       }
     }
     
@@ -214,9 +227,14 @@ export async function GET() {
           console.log('🔔 Creating outbound web widget');
           this.createOutboundWebWidget(container);
           break;
+        case 'error':
+          console.error('❌ Error loading widget:', this.widgetConfig.error_message);
+          this.createErrorWidget(container);
+          break;
         default:
-          console.log('⚠️ Unknown widget type, falling back to inbound web:', this.widgetConfig.widget_type);
-          this.createInboundWebWidget(container);
+          console.error('⚠️ Unknown widget type:', this.widgetConfig.widget_type);
+          this.widgetConfig.error_message = \`Unknown widget type: \${this.widgetConfig.widget_type}\`;
+          this.createErrorWidget(container);
       }
       
       this.element.appendChild(container);
@@ -332,11 +350,66 @@ export async function GET() {
       
       container.appendChild(button);
       this.button = button;
-      
+
       // Add ringing animation
       button.style.animation = 'retell-ring 2s infinite';
     }
-    
+
+    createErrorWidget(container) {
+      const errorContainer = document.createElement('div');
+      errorContainer.style.cssText = \`
+        background: #fee;
+        border: 2px solid #fcc;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 400px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      \`;
+
+      const errorIcon = document.createElement('div');
+      errorIcon.textContent = '⚠️';
+      errorIcon.style.cssText = 'font-size: 32px; text-align: center; margin-bottom: 8px;';
+
+      const errorTitle = document.createElement('div');
+      errorTitle.textContent = 'Widget Error';
+      errorTitle.style.cssText = \`
+        font-size: 16px;
+        font-weight: 600;
+        color: #c00;
+        text-align: center;
+        margin-bottom: 8px;
+      \`;
+
+      const errorMessage = document.createElement('div');
+      errorMessage.textContent = this.widgetConfig.error_message || 'Failed to load widget';
+      errorMessage.style.cssText = \`
+        font-size: 14px;
+        color: #666;
+        text-align: center;
+        line-height: 1.4;
+      \`;
+
+      errorContainer.appendChild(errorIcon);
+      errorContainer.appendChild(errorTitle);
+      errorContainer.appendChild(errorMessage);
+
+      // Add details for debugging if available
+      if (this.widgetConfig.error_status === 403) {
+        const hint = document.createElement('div');
+        hint.textContent = 'This domain is not authorized to use this widget.';
+        hint.style.cssText = \`
+          font-size: 12px;
+          color: #999;
+          text-align: center;
+          margin-top: 8px;
+          font-style: italic;
+        \`;
+        errorContainer.appendChild(hint);
+      }
+
+      container.appendChild(errorContainer);
+    }
+
     async handleInboundWebClick() {
       if (this.isConnected) {
         await this.endCall();
