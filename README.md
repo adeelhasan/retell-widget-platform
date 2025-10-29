@@ -2,14 +2,39 @@
 
 A multi-tenant SaaS platform for embedding Retell AI voice agents on websites through simple script tags.
 
+## Why This Project?
+
+[Retell AI](https://www.retellai.com/) provides powerful voice AI agents that can be embedded on websites. However, the traditional approach requires either:
+
+1. **Exposing your API key client-side** (❌ security risk)
+2. **Setting up your own backend server** (⏰ time-consuming, requires infrastructure)
+3. **Managing authentication, rate limiting, and domain security yourself** (🛠️ complex)
+
+**This platform solves all of that.** It provides a secure, hosted middleware layer that:
+
+- ✅ **Keeps API keys server-side** - Your Retell API keys never touch the client
+- ✅ **One-line integration** - Just add a `<script>` tag, no backend setup needed
+- ✅ **Built-in security** - Domain verification, rate limiting, and optional password protection
+- ✅ **Multi-tenant dashboard** - Manage multiple widgets for different websites
+- ✅ **Production-ready** - Deploy to Vercel in minutes with Supabase backend
+
+### How It Compares
+
+| Approach | Security | Setup Time | Infrastructure |
+|----------|----------|------------|----------------|
+| **Client-side Retell SDK** | ❌ API keys exposed | ⚡ 5 min | None |
+| **Custom backend** ([Retell docs](https://docs.retellai.com/get-started/web-voice-agent)) | ✅ Secure | ⏰ Hours/days | Required |
+| **This Platform** | ✅ Secure | ⚡ 10 min | Managed (Vercel + Supabase) |
+
 ## 🚀 Features
 
 - **Multi-tenant Architecture**: Each user manages their own widgets
-- **Simple Integration**: One-line script tag embedding  
-- **Secure by Design**: Domain verification, rate limiting, and RLS
+- **Simple Integration**: One-line script tag embedding
+- **Secure by Design**: Domain verification, rate limiting, optional password protection, and RLS
 - **Modern UI**: Built with Next.js 14 + shadcn/ui
 - **Real-time Auth**: Supabase authentication and database
 - **Customizable Widgets**: Button text, metadata, and styling options
+- **Smart Phone Normalization**: Auto-formats US phone numbers for outbound calls
 
 ## 🏗️ Architecture
 
@@ -105,6 +130,29 @@ Widget (JavaScript)    Security Layer
 </form>
 ```
 
+### Password-Protected Widget
+
+You can optionally protect widgets with an access code that users must enter before using the widget:
+
+1. **Configure in Dashboard**:
+   - Edit your widget
+   - Toggle "Require Access Code" on
+   - Set a password (4-50 characters)
+   - Save the widget
+
+2. **User Experience**:
+   - When users try to use the widget, they'll see a password prompt
+   - After entering the correct code, it's cached in their browser session
+   - Incorrect codes are rejected with an error, allowing retry
+
+3. **Use Cases**:
+   - Semi-private demos (share password with specific clients)
+   - Beta testing (limit access to testers)
+   - Internal tools (add basic protection layer)
+   - Time-limited campaigns (rotate passwords periodically)
+
+**Note**: This is basic protection, not enterprise security. For sensitive use cases, combine with domain verification and consider additional authentication methods.
+
 ### Complete Example
 See `public/widget-example.html` for a complete working example with styling and multiple metadata fields.
 
@@ -144,6 +192,7 @@ This is a **demo/MVP project** with in-memory rate limiting. Please be aware of 
 **Current Protection:**
 - Domain verification (prevents unauthorized domains)
 - Rate limiting (limits abuse per widget)
+- Optional access code protection (password-protect widgets)
 
 **Additional Protection Options (Future):**
 1. **Cloudflare Protection** (Recommended)
@@ -151,12 +200,7 @@ This is a **demo/MVP project** with in-memory rate limiting. Please be aware of 
    - Bot Fight Mode, Turnstile CAPTCHA, or WAF rules
    - Protects at CDN level before requests reach your API
 
-2. **Optional Widget Password** (Future Feature)
-   - Per-widget password configuration in dashboard
-   - User must enter password before widget activates
-   - Useful for semi-private demos or beta testing
-
-3. **IP-Based Rate Limiting** (Future Enhancement)
+2. **IP-Based Rate Limiting** (Future Enhancement)
    - Track calls per IP address in addition to widget ID
    - Prevents single attacker from rotating widget IDs
 
