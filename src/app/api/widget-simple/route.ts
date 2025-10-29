@@ -107,13 +107,124 @@ export async function GET() {
     }
     
     @keyframes retell-ring {
-      0%, 100% { 
+      0%, 100% {
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         transform: translateY(-1px) scale(1);
       }
-      50% { 
+      50% {
         box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
         transform: translateY(-2px) scale(1.02);
+      }
+    }
+
+    /* Access Code Modal Styles */
+    .retell-access-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: retell-fade-in 0.2s ease;
+    }
+
+    .retell-access-modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: retell-slide-up 0.3s ease;
+    }
+
+    .retell-access-modal h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .retell-access-modal p {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .retell-access-modal input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+    }
+
+    .retell-access-modal input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .retell-access-modal-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .retell-access-modal button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .retell-access-modal button.cancel {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .retell-access-modal button.cancel:hover {
+      background: #e5e7eb;
+    }
+
+    .retell-access-modal button.submit {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .retell-access-modal button.submit:hover {
+      background: #2563eb;
+    }
+
+    .retell-access-error {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: -12px;
+      margin-bottom: 12px;
+    }
+
+    @keyframes retell-fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes retell-slide-up {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   \`;
@@ -180,7 +291,94 @@ export async function GET() {
         };
       }
     }
-    
+
+    promptForAccessCode() {
+      return new Promise((resolve, reject) => {
+        // Check sessionStorage first
+        const sessionKey = \`retell_access_code_\${this.widgetId}\`;
+        const storedCode = sessionStorage.getItem(sessionKey);
+        if (storedCode) {
+          resolve(storedCode);
+          return;
+        }
+
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'retell-access-modal-overlay';
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'retell-access-modal';
+
+        modal.innerHTML = \`
+          <h3>Access Code Required</h3>
+          <p>Please enter the access code to use this widget.</p>
+          <input
+            type="text"
+            id="retell-access-code-input"
+            placeholder="Enter access code"
+            autocomplete="off"
+          />
+          <div class="retell-access-error" id="retell-access-error" style="display: none;"></div>
+          <div class="retell-access-modal-buttons">
+            <button class="cancel">Cancel</button>
+            <button class="submit">Continue</button>
+          </div>
+        \`;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const input = modal.querySelector('#retell-access-code-input');
+        const errorDiv = modal.querySelector('#retell-access-error');
+        const cancelBtn = modal.querySelector('.cancel');
+        const submitBtn = modal.querySelector('.submit');
+
+        // Focus input
+        setTimeout(() => input.focus(), 100);
+
+        // Handle cancel
+        const cleanup = () => {
+          document.body.removeChild(overlay);
+        };
+
+        cancelBtn.addEventListener('click', () => {
+          cleanup();
+          reject(new Error('Access code entry cancelled'));
+        });
+
+        // Handle submit
+        const submitCode = () => {
+          const code = input.value.trim();
+          if (!code) {
+            errorDiv.textContent = 'Please enter an access code';
+            errorDiv.style.display = 'block';
+            return;
+          }
+
+          // Store in sessionStorage
+          sessionStorage.setItem(sessionKey, code);
+          cleanup();
+          resolve(code);
+        };
+
+        submitBtn.addEventListener('click', submitCode);
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            submitCode();
+          }
+        });
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            cleanup();
+            reject(new Error('Access code entry cancelled'));
+          }
+        });
+      });
+    }
+
     getDefaultButtonText() {
       if (!this.widgetConfig) return 'Start Voice Call';
       
@@ -445,8 +643,20 @@ export async function GET() {
     
     async startInboundWebCall() {
       try {
+        // Check if access code is required
+        let accessCode = null;
+        if (this.widgetConfig?.require_access_code) {
+          try {
+            accessCode = await this.promptForAccessCode();
+          } catch (error) {
+            console.log('Access code prompt cancelled');
+            this.setState('idle');
+            return;
+          }
+        }
+
         this.setState('connecting');
-        
+
         // Check HTTPS requirement for microphone access
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
           throw new Error('Voice calls require HTTPS. Please use https:// instead of http://');
@@ -485,7 +695,8 @@ export async function GET() {
           },
           body: JSON.stringify({
             widget_id: this.widgetId,
-            metadata: this.getMetadata()
+            metadata: this.getMetadata(),
+            ...(accessCode && { access_code: accessCode })
           })
         });
         
@@ -511,8 +722,20 @@ export async function GET() {
     
     async startOutboundWebCall() {
       try {
+        // Check if access code is required
+        let accessCode = null;
+        if (this.widgetConfig?.require_access_code) {
+          try {
+            accessCode = await this.promptForAccessCode();
+          } catch (error) {
+            console.log('Access code prompt cancelled');
+            this.setState('idle');
+            return;
+          }
+        }
+
         this.setState('connecting');
-        
+
         // Check HTTPS requirement for microphone access
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
           throw new Error('Voice calls require HTTPS. Please use https:// instead of http://');
@@ -556,7 +779,8 @@ export async function GET() {
               call_type: 'outbound_web',
               agent_persona: this.widgetConfig.agent_persona,
               opening_message: this.widgetConfig.opening_message
-            }
+            },
+            ...(accessCode && { access_code: accessCode })
           })
         });
         
@@ -685,8 +909,20 @@ export async function GET() {
     
     async initiateOutboundCall(phoneNumber) {
       try {
+        // Check if access code is required
+        let accessCode = null;
+        if (this.widgetConfig?.require_access_code) {
+          try {
+            accessCode = await this.promptForAccessCode();
+          } catch (error) {
+            console.log('Access code prompt cancelled');
+            this.setState('idle');
+            return;
+          }
+        }
+
         this.setState('connecting');
-        
+
         const response = await fetch(\`\${this.baseUrl}/api/v1/outbound-call\`, {
           method: 'POST',
           headers: {
@@ -696,7 +932,8 @@ export async function GET() {
           body: JSON.stringify({
             widget_id: this.widgetId,
             phone_number: phoneNumber,
-            metadata: this.getMetadata()
+            metadata: this.getMetadata(),
+            ...(accessCode && { access_code: accessCode })
           })
         });
         

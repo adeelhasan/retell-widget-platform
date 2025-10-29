@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Copy, Edit, Trash, Phone } from 'lucide-react';
+import { MoreHorizontal, Copy, Edit, Trash, Phone, Lock } from 'lucide-react';
 import { Widget, WidgetType } from '@/lib/types';
 import { formatDate } from '@/lib/utils-helpers';
 import {
@@ -60,6 +60,11 @@ export function WidgetCard({ widget, onDelete, onEdit, onCopyEmbed }: WidgetCard
             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${widgetTypeInfo.color}`}>
               {widgetTypeInfo.icon} {widgetTypeInfo.label}
             </span>
+            {widget.require_access_code && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700" title="Access code required">
+                <Lock className="h-3 w-3" /> Protected
+              </span>
+            )}
           </div>
         </div>
         <DropdownMenu>
