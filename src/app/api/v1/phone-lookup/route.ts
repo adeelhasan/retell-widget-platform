@@ -114,7 +114,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         phone_number: phoneNumber,
         display_text: widget.display_text || `Call ${phoneNumber}`,
-        widget_type: widget.widget_type
+        widget_type: widget.widget_type,
+        require_access_code: widget.require_access_code || false
       });
 
     } catch (error) {

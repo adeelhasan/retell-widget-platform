@@ -63,12 +63,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check access code if required
+    if (widget.require_access_code) {
+      const { access_code } = body;
+      if (!access_code || access_code !== widget.access_code) {
+        return NextResponse.json(
+          {
+            error: 'Access denied',
+            details: 'Invalid or missing access code. Please enter the correct access code to use this widget.'
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Check rate limiting if enabled
     if (widget.rate_limit_enabled) {
       const rateLimit = widget.rate_limit_calls_per_hour || CONFIG.RATE_LIMITING.CALLS_PER_HOUR;
       if (!checkRateLimit(widget_id, rateLimit)) {
         return NextResponse.json(
-          { error: 'Rate limit exceeded. Please try again later.' }, 
+          { error: 'Rate limit exceeded. Please try again later.' },
           { status: 429 }
         );
       }

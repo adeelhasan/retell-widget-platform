@@ -69,6 +69,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Domain not authorized' }, { status: 403 });
     }
 
+    // Check access code if required
+    if (widget.require_access_code) {
+      const { access_code } = body;
+      if (!access_code || access_code !== widget.access_code) {
+        return NextResponse.json({
+          error: 'Access denied',
+          details: 'Invalid or missing access code. Please enter the correct access code to use this widget.'
+        }, { status: 403 });
+      }
+    }
+
     // Check rate limiting (important for outbound calls as they cost money!)
     // Use stricter limit for outbound calls - use widget setting or default
     const rateLimit = widget.rate_limit_calls_per_hour || CONFIG.RATE_LIMITING.CALLS_PER_HOUR;

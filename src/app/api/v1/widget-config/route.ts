@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const { data: widget, error } = await supabase
       .from('widgets')
-      .select('id, widget_type, button_text, display_text, agent_persona, opening_message, allowed_domain, outbound_phone_number, default_agent_name, default_property_type, default_lead_source, default_contact_email, default_notes')
+      .select('id, widget_type, button_text, display_text, agent_persona, opening_message, allowed_domain, outbound_phone_number, require_access_code, default_agent_name, default_property_type, default_lead_source, default_contact_email, default_notes')
       .eq('id', widgetId)
       .single();
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     
     console.log('✅ Domain authorized for widget:', widget.id);
 
-    // Return widget configuration (excluding sensitive data)
+    // Return widget configuration (excluding sensitive data like access_code value)
     const response: {
       id: string;
       widget_type: string;
@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
       display_text: string | null;
       agent_persona: string | null;
       opening_message: string | null;
+      require_access_code: boolean;
       default_metadata: {
         agent_name: string | null;
         property_type: string | null;
@@ -75,6 +76,7 @@ export async function GET(request: NextRequest) {
       display_text: widget.display_text,
       agent_persona: widget.agent_persona,
       opening_message: widget.opening_message,
+      require_access_code: widget.require_access_code || false,
       default_metadata: {
         agent_name: widget.default_agent_name,
         property_type: widget.default_property_type,
