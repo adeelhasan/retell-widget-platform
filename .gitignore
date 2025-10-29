@@ -53,3 +53,7 @@ public/widget-demo.html
 
 #mcp
 .mcp.json
+
+# private demo files (kept in private-demos branch)
+public/architoon-demo.html
+public/test-widget.html

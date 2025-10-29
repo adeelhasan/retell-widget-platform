@@ -699,12 +699,20 @@ export async function GET() {
             ...(accessCode && { access_code: accessCode })
           })
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
+
+          // Clear cached access code on 403 (access denied) to allow retry
+          if (response.status === 403) {
+            const sessionKey = \`retell_access_code_\${this.widgetId}\`;
+            sessionStorage.removeItem(sessionKey);
+            console.log('🔑 Cleared cached access code due to access denied error');
+          }
+
           throw new Error(errorData.error || \`HTTP \${response.status}: \${response.statusText}\`);
         }
-        
+
         const callData = await response.json();
         console.log('✅ Call registered:', callData.call_id);
         
@@ -783,12 +791,20 @@ export async function GET() {
             ...(accessCode && { access_code: accessCode })
           })
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
+
+          // Clear cached access code on 403 (access denied) to allow retry
+          if (response.status === 403) {
+            const sessionKey = \`retell_access_code_\${this.widgetId}\`;
+            sessionStorage.removeItem(sessionKey);
+            console.log('🔑 Cleared cached access code due to access denied error');
+          }
+
           throw new Error(errorData.error || \`HTTP \${response.status}: \${response.statusText}\`);
         }
-        
+
         const callData = await response.json();
         console.log('✅ Outbound web call registered:', callData.call_id);
         
@@ -936,15 +952,22 @@ export async function GET() {
             ...(accessCode && { access_code: accessCode })
           })
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok) {
           this.setState('success');
           console.log('✅ Outbound call success:', result.message || 'Call initiated! You should receive a call shortly.');
           // Reset to idle after success message displays
           setTimeout(() => this.setState('idle'), 4000);
         } else {
+          // Clear cached access code on 403 (access denied) to allow retry
+          if (response.status === 403) {
+            const sessionKey = \`retell_access_code_\${this.widgetId}\`;
+            sessionStorage.removeItem(sessionKey);
+            console.log('🔑 Cleared cached access code due to access denied error');
+          }
+
           throw new Error(result.error || 'Failed to initiate call');
         }
         

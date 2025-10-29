@@ -71,6 +71,8 @@ async function updateWidget(
     allowed_domain,
     button_text,
     rate_limit_calls_per_hour,
+    access_code,
+    require_access_code,
     widget_type,
     display_text,
     agent_persona,
@@ -119,11 +121,15 @@ async function updateWidget(
   if (allowed_domain !== undefined) updateData.allowed_domain = allowed_domain;
   if (button_text !== undefined) updateData.button_text = button_text;
   if (rate_limit_calls_per_hour !== undefined) updateData.rate_limit_calls_per_hour = rate_limit_calls_per_hour;
+  if (access_code !== undefined) updateData.access_code = access_code;
+  if (require_access_code !== undefined) updateData.require_access_code = require_access_code;
   if (widget_type !== undefined) updateData.widget_type = widget_type;
   if (display_text !== undefined) updateData.display_text = display_text;
   if (agent_persona !== undefined) updateData.agent_persona = agent_persona;
   if (opening_message !== undefined) updateData.opening_message = opening_message;
   if (outbound_phone_number !== undefined) updateData.outbound_phone_number = outbound_phone_number;
+
+  console.log('📝 Update data:', { access_code, require_access_code, updateData });
 
   // Update widget (RLS policy ensures user can only update their own widgets)
   const { data: widget, error } = await supabase

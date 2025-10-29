@@ -109,12 +109,10 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
 
   const widgetType = form.watch('widget_type');
 
-  // Update button text when widget type changes
+  // Update widget type (button text will use render-time defaults)
   const handleWidgetTypeChange = (value: WidgetType) => {
     form.setValue('widget_type', value);
-    if (!form.getValues('button_text')) {
-      form.setValue('button_text', getDefaultButtonText(value));
-    }
+    // Don't auto-fill button_text - let it stay empty to use render-time defaults
   };
 
   const handleFormSubmit = (data: WidgetFormData) => {
@@ -474,14 +472,14 @@ function getButtonTextPlaceholder(widgetType: WidgetType): string {
 function getButtonTextDescription(widgetType: WidgetType): string {
   switch (widgetType) {
     case 'inbound_web':
-      return 'Text shown on the button users click to start the call';
+      return 'Text shown on the button users click to start the call. Leave empty to use default based on widget type.';
     case 'inbound_phone':
-      return 'Button label. The phone number will be auto-detected from your agent and displayed on the button.';
+      return 'Button label. The phone number will be auto-detected from your agent and displayed on the button. Leave empty to use default.';
     case 'outbound_phone':
-      return 'Text shown on the button to request a callback';
+      return 'Text shown on the button to request a callback. Leave empty to use default based on widget type.';
     case 'outbound_web':
-      return 'Text shown on the button to simulate answering an incoming call';
+      return 'Text shown on the button to simulate answering an incoming call. Leave empty to use default based on widget type.';
     default:
-      return '';
+      return 'Leave empty to use default based on widget type.';
   }
 }

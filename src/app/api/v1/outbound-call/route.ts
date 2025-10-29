@@ -24,17 +24,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate and normalize phone number format
-    const normalizedPhone = phone_number.replace(/[\s\-\(\)]/g, '');
-    const phoneRegex = /^\+?[1-9]\d{9,14}$/;
-    if (!phoneRegex.test(normalizedPhone)) {
-      return NextResponse.json({ 
+    // Step 1: Strip all formatting characters including +
+    const normalizedPhone = phone_number.replace(/[\s\-\(\)\+]/g, '');
+
+    // Step 2: Detect US numbers (10 digits starting with 2-9)
+    const isUSNumber = /^[2-9]\d{9}$/.test(normalizedPhone);
+
+    // Step 3: Add country code if US number
+    const withCountryCode = isUSNumber ? `1${normalizedPhone}` : normalizedPhone;
+
+    // Step 4: Validate E.164 format (11-15 digits total)
+    const phoneRegex = /^[1-9]\d{10,14}$/;
+    if (!phoneRegex.test(withCountryCode)) {
+      return NextResponse.json({
         error: 'Invalid phone number format',
-        details: 'Please enter a valid phone number with country code (e.g., +1234567890)'
+        details: 'Please enter a valid phone number (10 digits for US numbers, or international with country code)'
       }, { status: 400 });
     }
 
-    // Ensure phone number starts with +
-    const formattedPhone = normalizedPhone.startsWith('+') ? normalizedPhone : `+${normalizedPhone}`;
+    // Step 5: Add + prefix for E.164 format
+    const formattedPhone = `+${withCountryCode}`;
+
+    console.log('📞 Phone normalization:', {
+      input: phone_number,
+      normalized: normalizedPhone,
+      isUS: isUSNumber,
+      final: formattedPhone
+    });
 
     // Get widget configuration including default metadata
     const { data: widget, error } = await supabaseAdmin

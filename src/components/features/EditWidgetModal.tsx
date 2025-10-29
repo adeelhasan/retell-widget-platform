@@ -37,7 +37,9 @@ export function EditWidgetModal({ widget, open, onClose, onSuccess }: EditWidget
         agent_id: data.agent_id,
         allowed_domain: data.allowed_domain,
         button_text: data.button_text,
-        rate_limit_calls_per_hour: data.rate_limit_calls_per_hour
+        rate_limit_calls_per_hour: data.rate_limit_calls_per_hour,
+        access_code: data.access_code,
+        require_access_code: data.require_access_code
       };
       
       const updatedWidget = await apiClient.updateWidget(widget.id, updateData);
