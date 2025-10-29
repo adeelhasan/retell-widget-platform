@@ -122,18 +122,15 @@ This is a **demo/MVP project** with in-memory rate limiting. Please be aware of 
 **Current Implementation:**
 - Rate limits are stored in-memory only (not in database)
 - Sliding window algorithm (1-hour window by default)
-- Applied only to `/api/v1/register-call` endpoint (inbound web calls)
+- Applied to public widget endpoints: `/api/v1/register-call`, `/api/v1/outbound-call`, `/api/v1/phone-lookup`
 
 **Known Limitations:**
 1. ⚠️ **Server Restarts**: Rate limit data is lost on server restart/deployment
 2. ⚠️ **Multi-Instance Deployments**: Each server instance has separate rate limits
    - Example: 10 calls/hour limit × 3 instances = 30 effective calls/hour
-3. ⚠️ **Missing Endpoints**: Rate limiting not yet applied to:
-   - Outbound phone calls (`/api/v1/outbound-call`) - **High priority for production**
-   - Phone number lookup (`/api/v1/phone-lookup`)
-   - Widget configuration (`/api/v1/widget-config`)
-4. ⚠️ **No Audit Trail**: Call history is not logged to database
-5. ⚠️ **No Manual Reset**: Dashboard doesn't have manual rate limit reset feature yet
+3. ⚠️ **No Audit Trail**: Call history is not logged to database
+4. ⚠️ **No Manual Reset**: Dashboard doesn't have manual rate limit reset feature yet
+5. ⚠️ **No Retry-After Info**: 429 responses don't include time until next available slot
 
 **For Production Use:**
 - Consider Redis-backed rate limiting for persistence and multi-instance support
