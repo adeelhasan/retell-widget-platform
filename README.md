@@ -26,99 +26,186 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 | **Custom backend** ([Retell docs](https://docs.retellai.com/get-started/web-voice-agent)) | ✅ Secure | ⏰ Hours/days | Required |
 | **This Platform** | ✅ Secure | ⚡ 10 min | Managed (Vercel + Supabase) |
 
-## 🚀 Features
+---
+
+## 📖 Table of Contents
+
+**Product Overview**
+- [What You Can Build](#-what-you-can-build) - Four widget types explained
+- [Smart Metadata System](#-smart-metadata-system) - Context passing
+- [Platform Features](#-platform-features) - Core capabilities
+
+**Getting Started**
+- [Quick Start](#-quick-start) - Get running in 5 minutes
+- [Widget Integration](#-widget-integration) - Embed code examples
+- [Password Protection](#password-protected-widget) - Optional security
+
+**Setup & Deployment**
+- [Installation](#️-installation) - Full setup guide
+- [Database Setup](#database-setup) - Schema installation
+- [Deployment](#-deployment) - Deploy to Vercel
+
+**Technical Reference**
+- [Security Features](#-security-features) - Domain verification, rate limiting
+- [Testing](#-testing) - Development and testing guide
+- [Authentication](#-authentication--security) - API patterns
+- [Key Files](#-key-files) - Important project files
+- [Platform Limits](#️-platform-limits) - Quotas and constraints
+
+---
+
+## 🎯 What You Can Build
+
+### Four Widget Types for Every Use Case
+
+#### 🎤 Inbound Web - Browser Voice Chat
+**Use Case**: Customer support, sales demos, interactive FAQs
+**How It Works**: User clicks button → microphone activates → instant voice conversation in browser
+
+```html
+<script src="your-domain/api/widget-simple" data-widget-id="your-id"></script>
+```
+
+**Perfect For**:
+- "Talk to Sales" buttons on landing pages
+- Customer support chat alternatives
+- Product demo scheduling
+- Interactive help centers
+
+---
+
+#### 📞 Inbound Phone - Call Our Number
+**Use Case**: Traditional phone support with AI answering
+**How It Works**: Widget displays your phone number → user calls → AI agent answers
+
+**Perfect For**:
+- Business support lines
+- Appointment scheduling by phone
+- Order status inquiries
+- 24/7 automated reception
+
+---
+
+#### 📱 Outbound Phone - We'll Call You
+**Use Case**: Lead capture, callbacks, appointment reminders
+**How It Works**: User enters phone number → AI calls them within seconds → personalized conversation
+
+**Perfect For**:
+- "Request callback" forms
+- Lead qualification
+- Appointment confirmations
+- Customer surveys
+- Demo bookings
+
+**Bonus**: Automatically formats US phone numbers - users can enter `(555) 123-4567`, `555-123-4567`, or `5551234567`
+
+---
+
+#### 🔔 Outbound Web - Simulated Incoming Call
+**Use Case**: Proactive engagement, urgent notifications
+**How It Works**: Widget displays as "incoming call" → user answers in browser → agent delivers message
+
+**Perfect For**:
+- Flash sale notifications
+- Abandoned cart recovery
+- Limited-time offers
+- VIP customer outreach
+- Breaking news alerts
+
+---
+
+## 🎨 Smart Metadata System
+
+### Automatic Context Passing
+
+Your widgets can automatically pass page context to Retell agents using hidden form fields:
+
+```html
+<!-- Widget -->
+<script src="your-domain/api/widget-simple" data-widget-id="abc123"></script>
+
+<!-- Context form - automatically collected -->
+<form class="retell-metadata" data-widget-id="abc123">
+  <input type="hidden" name="customer_name" value="John Smith">
+  <input type="hidden" name="product_interest" value="Enterprise Plan">
+  <input type="hidden" name="cart_value" value="$299">
+</form>
+```
+
+**Your agent receives**: All form values as `{{customer_name}}`, `{{product_interest}}`, `{{cart_value}}`
+
+### Auto-Injected System Context
+
+The platform automatically adds useful context to every call:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `page_url` | Current page URL | `https://example.com/pricing` |
+| `page_title` | Browser page title | `"Pricing - Your Company"` |
+| `timestamp` | When call started | `2025-01-15T10:30:00Z` |
+| `user_agent` | Browser info | `Mozilla/5.0...` |
+| `widget_version` | Widget version | `1.0.0` |
+
+**Use in your agent prompt**:
+```
+User is viewing {{page_title}} at {{page_url}}.
+Customer name: {{customer_name}}
+```
+
+### Widget-Level Defaults
+
+Set default metadata values in the dashboard that apply to all calls from a widget. Page-level metadata overrides widget defaults.
+
+**Example**: Set `lead_source: "Website Contact"` as default, then page can override with `lead_source: "Pricing Page"`.
+
+---
+
+## 🚀 Platform Features
 
 - **Multi-tenant Architecture**: Each user manages their own widgets
-- **Simple Integration**: One-line script tag embedding
-- **Secure by Design**: Domain verification, rate limiting, optional password protection, and RLS
-- **Modern UI**: Built with Next.js 14 + shadcn/ui
-- **Real-time Auth**: Supabase authentication and database
-- **Customizable Widgets**: Button text, metadata, and styling options
-- **Smart Phone Normalization**: Auto-formats US phone numbers for outbound calls
+- **One-Line Integration**: Just add a `<script>` tag - no backend needed
+- **Secure by Design**: Domain verification, rate limiting, optional password protection
+- **Modern Dashboard**: Built with Next.js 14 + shadcn/ui
+- **Instant Auth**: Supabase authentication and database
+- **Smart Metadata**: Auto-inject context from any webpage
+- **Phone Normalization**: Auto-formats US numbers to E.164
 
-## 🏗️ Architecture
+---
 
-```
-Frontend (Next.js)     Backend (API Routes)      Database (Supabase)
-├── Dashboard          ├── /api/widgets          ├── auth.users
-├── Authentication     ├── /api/widgets/[id]     └── public.widgets
-├── Widget Management  └── /api/v1/register-call
-└── Embed Generation   
-                      
-Widget (JavaScript)    Security Layer            
-├── Auto-initialization├── Domain Verification   
-├── State Management   ├── Rate Limiting        
-├── API Integration    └── Input Validation     
-└── Custom Styling     
-```
+## ⚡ Quick Start
 
-## 📋 Prerequisites
+**Get your first widget running in 5 minutes:**
 
-- Node.js 18+ and npm
-- Supabase account and project
-- Retell AI account (for voice agents)
+1. **Deploy the platform** (one-time setup):
+   - Fork this repo and deploy to [Vercel](https://vercel.com) (2 min)
+   - Create a [Supabase](https://supabase.com) project (1 min)
+   - Run `database-setup.sql` in Supabase SQL Editor (30 sec)
+   - Add environment variables in Vercel (1 min)
 
-## 🛠️ Installation
+2. **Create your first widget**:
+   - Visit your deployed app → Sign up
+   - Click "Create Widget" → Fill in:
+     - Widget name (e.g., "Sales Demo")
+     - Your Retell API key (from Retell dashboard)
+     - Your Retell agent ID (e.g., `agent_abc123`)
+     - Allowed domain (e.g., `example.com` or `localhost` for testing)
+   - Copy the embed code
 
-1. **Clone and Install**
-   ```bash
-   git clone <repository-url>
-   cd retell-widget-platform
-   npm install
+3. **Add to your website**:
+   ```html
+   <script
+     src="https://your-app.vercel.app/api/widget-simple"
+     data-widget-id="your-widget-id">
+   </script>
    ```
 
-2. **Environment Setup**
-   ```bash
-   cp .env.example .env.local
-   ```
+**That's it!** Your voice AI is now live on your site.
 
-3. **Configure Environment Variables**
-   ```bash
-   # Supabase (from your Supabase dashboard)
-   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-   
-   # App Configuration
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   
-   # Rate Limiting (optional - defaults shown)
-   RATE_LIMIT_CALLS_PER_HOUR=10
-   RATE_LIMIT_WINDOW_MS=3600000
-   
-   # Limits (optional - defaults shown)
-   MAX_METADATA_SIZE_BYTES=1024
-   MAX_WIDGETS_PER_USER=10
-   MAX_WIDGET_NAME_LENGTH=100
-   
-   # Security (optional - defaults shown)
-   ALLOWED_DEV_DOMAINS=localhost,*.vercel.app,*.netlify.app
-   RETELL_API_TIMEOUT_MS=10000
-   ```
-
-4. **Database Setup**
-
-   The complete database schema is in `database-setup.sql` and includes:
-   - Widgets table with all widget types (inbound/outbound web/phone)
-   - Row Level Security (RLS) policies for multi-tenant isolation
-   - Indexes for performance
-   - Validation constraints
-   - Access code protection fields
-
-   To set up your database:
-   - Go to your Supabase dashboard
-   - Navigate to SQL Editor
-   - Copy and paste the entire contents of `database-setup.sql`
-   - Click "Run" to execute
-
-   **Note**: The schema includes detailed comments explaining each widget type and field usage.
-
-5. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
+---
 
 ## 🎨 Widget Integration
+
+Now that you have the platform running, here's how to customize your widgets:
 
 ### Basic Widget
 ```html
@@ -193,59 +280,64 @@ You can optionally protect widgets with an access code that users must enter bef
 ### Complete Example
 See `public/widget-example.html` for a complete working example with styling and multiple metadata fields.
 
-## 🔒 Security Features
+---
 
-- **Domain Verification**: Widgets restricted to authorized domains
-- **Rate Limiting**: Configurable per-widget call limits (see limitations below)
-- **Row Level Security**: Database-level access control
-- **Input Validation**: Server-side validation for all inputs
+## 🛠️ Installation
 
-### Rate Limiting Limitations (Demo Project)
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- A [Supabase](https://supabase.com) account
+- A [Retell AI](https://www.retellai.com/) account
 
-This is a **demo/MVP project** with in-memory rate limiting. Please be aware of these limitations:
+### Setup Steps
 
-**Current Implementation:**
-- Rate limits are stored in-memory only (not in database)
-- Sliding window algorithm (1-hour window by default)
-- Applied to public widget endpoints: `/api/v1/register-call`, `/api/v1/outbound-call`, `/api/v1/phone-lookup`
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/retell-web-agent-middleware.git
+   cd retell-web-agent-middleware
+   ```
 
-**Known Limitations:**
-1. ⚠️ **Server Restarts**: Rate limit data is lost on server restart/deployment
-2. ⚠️ **Multi-Instance Deployments**: Each server instance has separate rate limits
-   - Example: 10 calls/hour limit × 3 instances = 30 effective calls/hour
-3. ⚠️ **No Audit Trail**: Call history is not logged to database
-4. ⚠️ **No Manual Reset**: Dashboard doesn't have manual rate limit reset feature yet
-5. ⚠️ **No Retry-After Info**: 429 responses don't include time until next available slot
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-**For Production Use:**
-- Consider Redis-backed rate limiting for persistence and multi-instance support
-- Add database logging for audit trails and compliance
-- Implement rate limiting on all public endpoints
-- Add manual reset feature in dashboard for customer support
-- Consider additional bot protection (see Bot Protection section below)
+3. **Set up Supabase**
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Go to Project Settings → API
+   - Copy your project URL and API keys
 
-### Bot Protection Strategies
+4. **Configure environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
 
-**Current Protection:**
-- Domain verification (prevents unauthorized domains)
-- Rate limiting (limits abuse per widget)
-- Optional access code protection (password-protect widgets)
+   Update `.env.local` with your values:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
 
-**Additional Protection Options (Future):**
-1. **Cloudflare Protection** (Recommended)
-   - Enable on the page hosting the widget (customer's website)
-   - Bot Fight Mode, Turnstile CAPTCHA, or WAF rules
-   - Protects at CDN level before requests reach your API
+### Database Setup
 
-2. **IP-Based Rate Limiting** (Future Enhancement)
-   - Track calls per IP address in addition to widget ID
-   - Prevents single attacker from rotating widget IDs
+1. **Open Supabase SQL Editor**
+   - Go to your Supabase project dashboard
+   - Click "SQL Editor" in the left sidebar
 
-**Note**: As a demo project, basic domain verification + rate limiting provides reasonable protection. For production, implement layered security based on your threat model.
+2. **Run the schema**
+   - Open `database-setup.sql` from this project
+   - Copy all contents
+   - Paste into Supabase SQL Editor
+   - Click "Run"
 
-## 🧪 Testing
-
-Visit `http://localhost:3000/widget-example.html` to see a complete integration example.
+This will create:
+- `widgets` table with Row Level Security (RLS)
+- Widget type enum
+- All necessary constraints and indexes
+- RLS policies for multi-tenant isolation
 
 ### Development Commands
 ```bash
@@ -302,15 +394,73 @@ git push --no-verify
 - Test widget functionality from external websites
 - Configure custom domain if needed
 
-## 🚀 Quick Start
+---
 
-1. Start the development server: `npm run dev`
-2. Visit `http://localhost:3000` 
-3. Sign up for an account
-4. Create your first widget
-5. Copy the embed code and test it
+## 📖 Technical Reference
 
-## 🔐 Authentication & Security
+### 🔒 Security Features
+
+- **Domain Verification**: Widgets restricted to authorized domains
+- **Rate Limiting**: Configurable per-widget call limits (see limitations below)
+- **Row Level Security**: Database-level access control
+- **Input Validation**: Server-side validation for all inputs
+
+#### Rate Limiting Limitations (Demo Project)
+
+This is a **demo/MVP project** with in-memory rate limiting. Please be aware of these limitations:
+
+**Current Implementation:**
+- Rate limits are stored in-memory only (not in database)
+- Sliding window algorithm (1-hour window by default)
+- Applied to public widget endpoints: `/api/v1/register-call`, `/api/v1/outbound-call`, `/api/v1/phone-lookup`
+
+**Known Limitations:**
+1. ⚠️ **Server Restarts**: Rate limit data is lost on server restart/deployment
+2. ⚠️ **Multi-Instance Deployments**: Each server instance has separate rate limits
+   - Example: 10 calls/hour limit × 3 instances = 30 effective calls/hour
+3. ⚠️ **No Audit Trail**: Call history is not logged to database
+4. ⚠️ **No Manual Reset**: Dashboard doesn't have manual rate limit reset feature yet
+5. ⚠️ **No Retry-After Info**: 429 responses don't include time until next available slot
+
+**For Production Use:**
+- Consider Redis-backed rate limiting for persistence and multi-instance support
+- Add database logging for audit trails and compliance
+- Implement rate limiting on all public endpoints
+- Add manual reset feature in dashboard for customer support
+- Consider additional bot protection (see Bot Protection section below)
+
+#### Bot Protection Strategies
+
+**Current Protection:**
+- Domain verification (prevents unauthorized domains)
+- Rate limiting (limits abuse per widget)
+- Optional access code protection (password-protect widgets)
+
+**Additional Protection Options (Future):**
+1. **Cloudflare Protection** (Recommended)
+   - Enable on the page hosting the widget (customer's website)
+   - Bot Fight Mode, Turnstile CAPTCHA, or WAF rules
+   - Protects at CDN level before requests reach your API
+
+2. **IP-Based Rate Limiting** (Future Enhancement)
+   - Track calls per IP address in addition to widget ID
+   - Prevents single attacker from rotating widget IDs
+
+**Note**: As a demo project, basic domain verification + rate limiting provides reasonable protection. For production, implement layered security based on your threat model.
+
+### 🧪 Testing
+
+Visit `http://localhost:3000/widget-example.html` to see a complete integration example with all widget types and metadata functionality.
+
+**Testing Checklist:**
+- Create widgets in dashboard for each widget type
+- Test domain verification (authorized vs unauthorized domains)
+- Test access code protection
+- Test metadata passing from hidden form fields
+- Test phone number normalization for outbound calls
+- Verify rate limiting behavior
+
+### 🔐 Authentication & Security
 
 This project includes **standardized authentication utilities** to ensure proper Supabase RLS compliance and prevent common authentication issues.
 
@@ -343,7 +493,7 @@ export const GET = withAuthAsync(getWidget, { validateUUID: 'id' });
 
 **→ See `docs/AUTHENTICATION.md` for complete patterns and troubleshooting guide**
 
-## 📁 Key Files
+### 📁 Key Files
 
 - `src/app/dashboard/` - Widget management dashboard
 - `src/app/api/` - REST API endpoints
@@ -353,7 +503,7 @@ export const GET = withAuthAsync(getWidget, { validateUUID: 'id' });
 - `docs/AUTHENTICATION.md` - **Authentication best practices guide** 🔑
 - `CLAUDE.md` - **Claude Code instructions for this project** 🤖
 
-## 🛡️ Platform Limits
+### 🛡️ Platform Limits
 
 - **Widgets per User**: 10 (configurable)
 - **Rate Limit**: 10 calls/hour per widget (configurable)  
