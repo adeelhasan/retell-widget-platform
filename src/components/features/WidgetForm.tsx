@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// @ts-nocheck - Multiple react-hook-form type declarations causing conflicts
 'use client';
 
-// @ts-nocheck - Multiple react-hook-form type declarations causing conflicts
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Widget, CreateWidgetRequest, WidgetType } from '@/lib/types';
 
 interface WidgetFormProps {
@@ -46,6 +49,13 @@ const widgetFormSchema = z.object({
     z.number().int().min(1, "Must be at least 1").max(1000, "Must be 1000 or less"),
     z.undefined()
   ]),
+  require_access_code: z.boolean().default(false),
+  access_code: z.string()
+    .trim()
+    .min(4, "Access code must be at least 4 characters")
+    .max(50, "Access code must be 50 characters or less")
+    .optional()
+    .or(z.literal('')),
   display_text: z.string().trim().optional(),
   agent_persona: z.string().trim().max(100, "Agent persona must be 100 characters or less").optional(),
   opening_message: z.string().trim().max(500, "Opening message must be 500 characters or less").optional(),
@@ -62,6 +72,15 @@ const widgetFormSchema = z.object({
 }, {
   message: "Outbound phone number is required for outbound phone widgets",
   path: ["outbound_phone_number"],
+}).refine((data) => {
+  // If require_access_code is true, access_code must be provided
+  if (data.require_access_code && (!data.access_code || data.access_code === '')) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Access code is required when protection is enabled",
+  path: ["access_code"],
 });
 
 type WidgetFormData = z.infer<typeof widgetFormSchema>;
@@ -70,7 +89,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
   const isEditMode = mode === 'edit' || !!widget;
 
   const form = useForm<WidgetFormData>({
-    resolver: zodResolver(widgetFormSchema),
+    resolver: zodResolver(widgetFormSchema) as any,
     defaultValues: {
       widget_type: widget?.widget_type || 'inbound_web',
       name: widget?.name || '',
@@ -79,6 +98,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
       allowed_domain: widget?.allowed_domain || '',
       button_text: widget?.button_text || '',
       rate_limit_calls_per_hour: widget?.rate_limit_calls_per_hour ?? undefined,
+      require_access_code: widget?.require_access_code || false,
+      access_code: widget?.access_code || '',
       display_text: widget?.display_text || '',
       agent_persona: widget?.agent_persona || '',
       opening_message: widget?.opening_message || '',
@@ -215,17 +236,15 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                   <FormControl>
                     <Input placeholder="domain.com or *.domain.com" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    <div className="space-y-1">
-                      <p>Supported formats:</p>
-                      <ul className="ml-4 space-y-0.5">
-                        <li>• <code className="bg-muted px-1 rounded">x.ai</code> - exact domain</li>
-                        <li>• <code className="bg-muted px-1 rounded">*.x.ai</code> - any subdomain of x.ai</li>
-                        <li>• <code className="bg-muted px-1 rounded">*.domain.*</code> - domain with any TLD</li>
-                        <li>• <code className="bg-muted px-1 rounded">localhost</code> - for development</li>
-                      </ul>
-                    </div>
-                  </FormDescription>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>Supported formats:</p>
+                    <ul className="ml-4 space-y-0.5">
+                      <li>• <code className="bg-muted px-1 rounded">x.ai</code> - exact domain</li>
+                      <li>• <code className="bg-muted px-1 rounded">*.x.ai</code> - any subdomain of x.ai</li>
+                      <li>• <code className="bg-muted px-1 rounded">*.domain.*</code> - domain with any TLD</li>
+                      <li>• <code className="bg-muted px-1 rounded">localhost</code> - for development</li>
+                    </ul>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -342,6 +361,53 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                 )}
               />
             )}
+
+            {/* Access Code Protection */}
+            <div className="space-y-4 rounded-lg border p-4">
+              <FormField
+                control={form.control}
+                name="require_access_code"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>Require Access Code</FormLabel>
+                      <FormDescription>
+                        Users must enter a code before using this widget
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch('require_access_code') && (
+                <FormField
+                  control={form.control}
+                  name="access_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Access Code</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="e.g., DEMO2024"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        4-50 characters. Share this code with users who should access the widget.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
 
             {/* Form Actions */}
             <div className="flex justify-end space-x-3 pt-4">

@@ -10,6 +10,8 @@ export interface Widget {
   button_text: string;
   rate_limit_calls_per_hour: number | null;
   rate_limit_enabled: boolean;
+  access_code?: string | null;
+  require_access_code: boolean;
   widget_type: WidgetType;
   display_text?: string;
   agent_persona?: string;
@@ -26,6 +28,8 @@ export interface CreateWidgetRequest {
   allowed_domain: string;
   button_text?: string;
   rate_limit_calls_per_hour?: number;
+  access_code?: string;
+  require_access_code?: boolean;
   widget_type?: WidgetType;
   display_text?: string;
   agent_persona?: string;
@@ -40,6 +44,8 @@ export interface UpdateWidgetRequest {
   allowed_domain?: string;
   button_text?: string;
   rate_limit_calls_per_hour?: number;
+  access_code?: string;
+  require_access_code?: boolean;
   widget_type?: WidgetType;
   display_text?: string;
   agent_persona?: string;
@@ -50,6 +56,7 @@ export interface UpdateWidgetRequest {
 export interface RegisterCallRequest {
   widget_id: string;
   metadata?: Record<string, unknown>;
+  access_code?: string;
 }
 
 export interface RegisterCallResponse {
