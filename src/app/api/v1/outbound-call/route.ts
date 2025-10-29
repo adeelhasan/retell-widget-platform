@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { CONFIG } from '@/lib/config';
-import { isAllowedDomain } from '@/lib/security';
+import { isAllowedDomain, checkRateLimit } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +67,17 @@ export async function POST(request: NextRequest) {
     
     if (!isAllowedDomain(origin, widget.allowed_domain)) {
       return NextResponse.json({ error: 'Domain not authorized' }, { status: 403 });
+    }
+
+    // Check rate limiting (important for outbound calls as they cost money!)
+    // Use stricter limit for outbound calls - use widget setting or default
+    const rateLimit = widget.rate_limit_calls_per_hour || CONFIG.RATE_LIMITING.CALLS_PER_HOUR;
+    if (!checkRateLimit(widget_id, rateLimit)) {
+      return NextResponse.json({
+        error: 'Rate limit exceeded',
+        details: 'Too many calls requested. Please try again later.',
+        retry_after: 'Please wait before making another call request.'
+      }, { status: 429 });
     }
 
     // TODO: In Phase 5, add SMS verification check here

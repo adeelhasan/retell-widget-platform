@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { CONFIG } from '@/lib/config';
-import { isAllowedDomain } from '@/lib/security';
+import { isAllowedDomain, checkRateLimit } from '@/lib/security';
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,6 +45,15 @@ export async function GET(request: NextRequest) {
 
     if (!isAllowedDomain(requestOrigin, widget.allowed_domain)) {
       return NextResponse.json({ error: 'Domain not authorized' }, { status: 403 });
+    }
+
+    // Check rate limiting to prevent phone number lookup abuse
+    const rateLimit = widget.rate_limit_calls_per_hour || CONFIG.RATE_LIMITING.CALLS_PER_HOUR;
+    if (!checkRateLimit(widgetId, rateLimit)) {
+      return NextResponse.json({
+        error: 'Rate limit exceeded',
+        details: 'Too many lookup requests. Please try again later.'
+      }, { status: 429 });
     }
 
     // Call Retell AI API to list phone numbers and find one linked to this agent
