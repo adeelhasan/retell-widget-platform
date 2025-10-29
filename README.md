@@ -129,17 +129,42 @@ Widget (JavaScript)    Security Layer
 ```
 
 ### Widget with Custom Button Text and Metadata
+
+Pass context to your Retell agent using a metadata form. The widget automatically collects these values and sends them securely through your middleware to Retell.
+
 ```html
-<script 
-  src="https://your-app.vercel.app/api/widget-simple" 
+<script
+  src="https://your-app.vercel.app/api/widget-simple"
   data-widget-id="your-widget-id-from-dashboard"
   data-button-text="Talk to Our AI Agent">
 </script>
+
+<!-- Metadata form: Widget automatically reads hidden inputs -->
 <form class="retell-metadata" data-widget-id="your-widget-id-from-dashboard">
   <input type="hidden" name="customer_name" value="John Smith">
   <input type="hidden" name="property_type" value="Condo">
   <input type="hidden" name="lead_source" value="Website">
+  <input type="hidden" name="page_url" value="/contact">
 </form>
+```
+
+**How it works:**
+1. Widget finds form with `class="retell-metadata"` matching your widget ID
+2. Extracts all hidden input values
+3. Sends them server-side to your middleware
+4. Middleware forwards to Retell as `retell_llm_dynamic_variables`
+5. Use in your agent prompt: `{{customer_name}}`, `{{property_type}}`, etc.
+
+**Dynamic values:**
+```html
+<script>
+// Populate metadata from your contact form
+document.getElementById('contactForm').addEventListener('submit', (e) => {
+  document.querySelector('[name="customer_name"]').value = e.target.name.value;
+  document.querySelector('[name="customer_email"]').value = e.target.email.value;
+  // Widget reads updated values when call starts
+});
+</script>
 ```
 
 ### Password-Protected Widget
