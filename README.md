@@ -111,9 +111,59 @@ See `public/widget-example.html` for a complete working example with styling and
 ## 🔒 Security Features
 
 - **Domain Verification**: Widgets restricted to authorized domains
-- **Rate Limiting**: Configurable per-widget call limits
+- **Rate Limiting**: Configurable per-widget call limits (see limitations below)
 - **Row Level Security**: Database-level access control
 - **Input Validation**: Server-side validation for all inputs
+
+### Rate Limiting Limitations (Demo Project)
+
+This is a **demo/MVP project** with in-memory rate limiting. Please be aware of these limitations:
+
+**Current Implementation:**
+- Rate limits are stored in-memory only (not in database)
+- Sliding window algorithm (1-hour window by default)
+- Applied only to `/api/v1/register-call` endpoint (inbound web calls)
+
+**Known Limitations:**
+1. ⚠️ **Server Restarts**: Rate limit data is lost on server restart/deployment
+2. ⚠️ **Multi-Instance Deployments**: Each server instance has separate rate limits
+   - Example: 10 calls/hour limit × 3 instances = 30 effective calls/hour
+3. ⚠️ **Missing Endpoints**: Rate limiting not yet applied to:
+   - Outbound phone calls (`/api/v1/outbound-call`) - **High priority for production**
+   - Phone number lookup (`/api/v1/phone-lookup`)
+   - Widget configuration (`/api/v1/widget-config`)
+4. ⚠️ **No Audit Trail**: Call history is not logged to database
+5. ⚠️ **No Manual Reset**: Dashboard doesn't have manual rate limit reset feature yet
+
+**For Production Use:**
+- Consider Redis-backed rate limiting for persistence and multi-instance support
+- Add database logging for audit trails and compliance
+- Implement rate limiting on all public endpoints
+- Add manual reset feature in dashboard for customer support
+- Consider additional bot protection (see Bot Protection section below)
+
+### Bot Protection Strategies
+
+**Current Protection:**
+- Domain verification (prevents unauthorized domains)
+- Rate limiting (limits abuse per widget)
+
+**Additional Protection Options (Future):**
+1. **Cloudflare Protection** (Recommended)
+   - Enable on the page hosting the widget (customer's website)
+   - Bot Fight Mode, Turnstile CAPTCHA, or WAF rules
+   - Protects at CDN level before requests reach your API
+
+2. **Optional Widget Password** (Future Feature)
+   - Per-widget password configuration in dashboard
+   - User must enter password before widget activates
+   - Useful for semi-private demos or beta testing
+
+3. **IP-Based Rate Limiting** (Future Enhancement)
+   - Track calls per IP address in addition to widget ID
+   - Prevents single attacker from rotating widget IDs
+
+**Note**: As a demo project, basic domain verification + rate limiting provides reasonable protection. For production, implement layered security based on your threat model.
 
 ## 🧪 Testing
 
