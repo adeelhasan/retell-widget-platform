@@ -97,9 +97,21 @@ Widget (JavaScript)    Security Layer
    ```
 
 4. **Database Setup**
+
+   The complete database schema is in `database-setup.sql` and includes:
+   - Widgets table with all widget types (inbound/outbound web/phone)
+   - Row Level Security (RLS) policies for multi-tenant isolation
+   - Indexes for performance
+   - Validation constraints
+   - Access code protection fields
+
+   To set up your database:
    - Go to your Supabase dashboard
    - Navigate to SQL Editor
-   - Run the SQL from `database-setup.sql`
+   - Copy and paste the entire contents of `database-setup.sql`
+   - Click "Run" to execute
+
+   **Note**: The schema includes detailed comments explaining each widget type and field usage.
 
 5. **Start Development Server**
    ```bash
@@ -309,10 +321,10 @@ export const GET = withAuthAsync(getWidget, { validateUUID: 'id' });
 ## 📁 Key Files
 
 - `src/app/dashboard/` - Widget management dashboard
-- `src/app/api/` - REST API endpoints  
+- `src/app/api/` - REST API endpoints
 - `src/app/api/widget-simple/` - Embeddable widget script endpoint
 - `public/widget-example.html` - Complete integration example
-- `database-setup.sql` - Database schema
+- `database-setup.sql` - **Complete database schema with all widget types** 📊
 - `docs/AUTHENTICATION.md` - **Authentication best practices guide** 🔑
 - `CLAUDE.md` - **Claude Code instructions for this project** 🤖
 
