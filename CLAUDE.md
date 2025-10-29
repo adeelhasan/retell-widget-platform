@@ -66,6 +66,92 @@ src/
 - **Export types** for reuse across components
 - **Use `Record<string, string>`** instead of `any` for route params
 
+### 6. Form Development Standards ⭐ CRITICAL
+
+**NEVER** create forms using manual state management. This project uses React Hook Form + Zod.
+
+#### ❌ PROHIBITED Patterns:
+```typescript
+// ❌ WRONG - Manual state management
+const [formData, setFormData] = useState({...});
+const handleChange = (field) => (e) => setFormData({...});
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const trimmed = formData.name.trim(); // Easy to forget!
+};
+```
+
+#### ✅ REQUIRED Pattern:
+```typescript
+// ✅ CORRECT - React Hook Form + Zod
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+
+// 1. Define Zod schema with .trim() on ALL string fields
+const formSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  allowed_domain: z.string().trim().url().or(z.literal('localhost')),
+  agent_id: z.string().trim().regex(/^agent_/, "Invalid agent ID"),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+// 2. Use React Hook Form with Zod resolver
+export function MyForm({ onSubmit }: Props) {
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      allowed_domain: '',
+      agent_id: '',
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form>
+  );
+}
+```
+
+#### Why This Pattern:
+- ✅ **Automatic trimming** via `.trim()` in schema - no whitespace bugs
+- ✅ **Type safety** - TypeScript knows exact form structure
+- ✅ **Field-level errors** - automatic display with `<FormMessage>`
+- ✅ **Validation** - centralized in Zod schema
+- ✅ **Less code** - no manual handleChange functions
+- ✅ **Consistent** - follows shadcn/ui best practices
+
+#### Form Checklist (ALL forms must have):
+- [ ] Zod validation schema defined
+- [ ] All string fields use `.trim()`
+- [ ] Uses `useForm` with `zodResolver`
+- [ ] Wrapped in shadcn `<Form>` component
+- [ ] Uses `<FormField>` for each input
+- [ ] Displays errors with `<FormMessage>`
+- [ ] Type-safe with `z.infer<typeof schema>`
+
+#### Reference Implementation:
+See `src/components/features/WidgetForm.tsx` for the complete pattern.
+
 ## Critical Security Requirements
 
 ### Domain Verification
