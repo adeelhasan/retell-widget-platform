@@ -309,7 +309,7 @@ ALLOWED_DEV_DOMAINS=localhost,*.vercel.app
 ## Documentation References
 
 - **Authentication**: `docs/AUTHENTICATION.md` - Complete auth patterns
-- **Requirements**: `docs/retell_widget_requirements.md` - Original spec
+- **Requirements**: `docs/archive/retell_widget_requirements.md` - Original spec (archived)
 - **API Routes**: See individual route files for endpoint docs
 - **Components**: See component files for prop interfaces
 
