@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { CONFIG } from '@/lib/config';
 import { isAllowedDomain, checkRateLimit } from '@/lib/security';
+import { checkDailyMinutesLimit, logCallStart } from '@/lib/usage-tracking';
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,6 +106,22 @@ export async function POST(request: NextRequest) {
         details: 'Too many calls requested. Please try again later.',
         retry_after: 'Please wait before making another call request.'
       }, { status: 429 });
+    }
+
+    // Check daily minutes limit
+    if (widget.daily_minutes_enabled) {
+      const canMakeCall = await checkDailyMinutesLimit(
+        widget_id,
+        widget.daily_minutes_limit,
+        widget.daily_minutes_enabled
+      );
+
+      if (!canMakeCall) {
+        return NextResponse.json({
+          error: 'Daily minutes limit exceeded',
+          details: 'Daily call minutes limit reached. Try again tomorrow.'
+        }, { status: 429 });
+      }
     }
 
     // TODO: In Phase 5, add SMS verification check here
@@ -211,6 +228,14 @@ export async function POST(request: NextRequest) {
 
       const retellData = await retellResponse.json();
       console.log('✅ Outbound call initiated:', retellData.call_id);
+
+      // Log call start for usage tracking
+      await logCallStart({
+        widgetId: widget_id,
+        userId: widget.user_id,
+        callId: retellData.call_id,
+        callType: 'outbound_phone'
+      });
 
       return NextResponse.json({
         success: true,

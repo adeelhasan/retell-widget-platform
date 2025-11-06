@@ -49,6 +49,11 @@ const widgetFormSchema = z.object({
     z.number().int().min(1, "Must be at least 1").max(1000, "Must be 1000 or less"),
     z.undefined()
   ]),
+  daily_minutes_limit: z.union([
+    z.number().int().min(1, "Must be at least 1").max(10000, "Must be 10000 or less"),
+    z.undefined()
+  ]),
+  daily_minutes_enabled: z.boolean().default(false),
   require_access_code: z.boolean().default(false),
   access_code: z.string()
     .trim()
@@ -98,6 +103,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
       allowed_domain: widget?.allowed_domain || '',
       button_text: widget?.button_text || '',
       rate_limit_calls_per_hour: widget?.rate_limit_calls_per_hour ?? undefined,
+      daily_minutes_limit: widget?.daily_minutes_limit ?? undefined,
+      daily_minutes_enabled: widget?.daily_minutes_enabled || false,
       require_access_code: widget?.require_access_code || false,
       access_code: widget?.access_code || '',
       display_text: widget?.display_text || '',
@@ -359,6 +366,67 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                 )}
               />
             )}
+
+            {/* Daily Minutes Limit */}
+            <div className="space-y-4 rounded-lg border p-4">
+              <FormField
+                control={form.control}
+                name="daily_minutes_enabled"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>Daily Minutes Limit</FormLabel>
+                      <FormDescription>
+                        Limit total call minutes per day to control costs
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch('daily_minutes_enabled') && (
+                <>
+                  <FormField<WidgetFormData>
+                    control={form.control}
+                    name="daily_minutes_limit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Maximum Minutes Per Day</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="60"
+                            min="1"
+                            max="10000"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Total call minutes allowed per day (resets at midnight UTC). Set based on your Retell pricing plan.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-900/20 px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="font-medium mb-1">ℹ️ How it works:</p>
+                    <ul className="ml-4 space-y-1 text-xs">
+                      <li>• Limits are enforced when calls start</li>
+                      <li>• Call durations are synced once daily at midnight UTC</li>
+                      <li>• Prevents budget overruns from long calls</li>
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Access Code Protection */}
             <div className="space-y-4 rounded-lg border p-4">
