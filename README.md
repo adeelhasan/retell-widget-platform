@@ -448,6 +448,77 @@ CALL_LOGS_RETENTION_DAYS=7
 CRON_SECRET=your-secure-random-string
 ```
 
+**Cron Job Setup - Two Options:**
+
+<details>
+<summary><strong>Option A: Vercel Cron (Simple)</strong></summary>
+
+The `vercel.json` file already configures a daily cron job. When you deploy:
+- Vercel automatically registers the cron job
+- Runs once daily at midnight UTC (Hobby plan)
+- No additional setup needed
+
+**Limitations:**
+- Hobby plan: Once daily only
+- Pro plan: Can run more frequently
+
+</details>
+
+<details>
+<summary><strong>Option B: Supabase pg_cron (Recommended - Free & Flexible)</strong></summary>
+
+Use Supabase's built-in cron (works on free tier, can run every 10 minutes):
+
+1. **Enable the pg_cron extension** in Supabase:
+```sql
+-- Run once in Supabase SQL Editor
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+```
+
+2. **Schedule the cron job** to call your Vercel endpoint:
+```sql
+-- Schedule to run every 10 minutes
+SELECT cron.schedule(
+  'sync-call-durations',           -- Job name
+  '*/10 * * * *',                  -- Every 10 minutes
+  $$
+  SELECT net.http_post(
+    url := 'https://your-app.vercel.app/api/cron/sync-call-durations',
+    headers := jsonb_build_object(
+      'Authorization',
+      'Bearer YOUR_CRON_SECRET'
+    )
+  );
+  $$
+);
+```
+
+3. **Verify it's scheduled:**
+```sql
+SELECT * FROM cron.job;
+```
+
+**To update the schedule:**
+```sql
+-- Unschedule old job
+SELECT cron.unschedule('sync-call-durations');
+
+-- Schedule with new frequency
+SELECT cron.schedule(...);
+```
+
+**Advantages:**
+- ✅ Free tier supports it
+- ✅ Can run every 10 minutes (vs once daily on Vercel Hobby)
+- ✅ More accurate usage tracking
+- ✅ Native to your database
+
+</details>
+
+**Which should you use?**
+- Start with **Vercel** (it's automatic)
+- Upgrade to **Supabase pg_cron** when you want more frequent syncing
+
 #### Rate Limiting Limitations (Demo Project)
 
 This is a **demo/MVP project** with in-memory rate limiting. Please be aware of these limitations:
