@@ -419,11 +419,11 @@ git push --no-verify
 1. Enable "Daily Minutes Limit" in widget settings
 2. Set maximum minutes (e.g., 60 minutes = 1 hour/day)
 3. Each call start is logged to database
-4. Call durations are synced once daily at midnight UTC via cron job
+4. Call durations are synced every 10 minutes via Supabase pg_cron
 5. Before starting new calls, system checks if today's total < limit
 
 **Important Notes:**
-- ⚠️ **Once-daily sync**: Call durations sync once per day (Vercel Hobby plan limitation)
+- 🔄 **Configurable sync frequency**: Sync every 10 minutes using Supabase pg_cron (recommended)
 - ✅ **Limits enforced at call-start**: New calls are blocked immediately when limit reached
 - ✅ **Accurate tracking**: Durations fetched from Retell API for precision
 - 🔄 **Auto-cleanup**: Old call logs deleted after 7 days (configurable via `CALL_LOGS_RETENTION_DAYS`)
@@ -448,30 +448,19 @@ CALL_LOGS_RETENTION_DAYS=7
 CRON_SECRET=your-secure-random-string
 ```
 
-**Cron Job Setup - Two Options:**
+**Cron Job Setup:**
 
 <details>
-<summary><strong>Option A: Vercel Cron (Simple)</strong></summary>
-
-The `vercel.json` file already configures a daily cron job. When you deploy:
-- Vercel automatically registers the cron job
-- Runs once daily at midnight UTC (Hobby plan)
-- No additional setup needed
-
-**Limitations:**
-- Hobby plan: Once daily only
-- Pro plan: Can run more frequently
-
-</details>
-
-<details>
-<summary><strong>Option B: Supabase pg_cron (Recommended - Free & Flexible)</strong></summary>
+<summary><strong>Supabase pg_cron (Recommended - Free & Flexible)</strong></summary>
 
 Use Supabase's built-in cron (works on free tier, can run every 10 minutes):
 
-1. **Enable the pg_cron extension** in Supabase:
+1. **Enable required extensions** in Supabase SQL Editor:
 ```sql
--- Run once in Supabase SQL Editor
+-- Enable pg_net for HTTP requests
+CREATE EXTENSION IF NOT EXISTS pg_net;
+
+-- Enable pg_cron for scheduling
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 ```
 
@@ -509,15 +498,11 @@ SELECT cron.schedule(...);
 
 **Advantages:**
 - ✅ Free tier supports it
-- ✅ Can run every 10 minutes (vs once daily on Vercel Hobby)
-- ✅ More accurate usage tracking
+- ✅ Can run every 10 minutes for more accurate tracking
+- ✅ No Vercel plan upgrade needed
 - ✅ Native to your database
 
 </details>
-
-**Which should you use?**
-- Start with **Vercel** (it's automatic)
-- Upgrade to **Supabase pg_cron** when you want more frequent syncing
 
 #### Rate Limiting Limitations (Demo Project)
 
