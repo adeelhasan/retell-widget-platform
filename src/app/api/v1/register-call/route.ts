@@ -6,6 +6,7 @@ import { validateMetadata } from '@/lib/utils-helpers';
 
 // Create security and rate limiting utilities
 import { isAllowedDomain, checkRateLimit } from '@/lib/security';
+import { checkDailyMinutesLimit, logCallStart } from '@/lib/usage-tracking';
 
 // POST /api/v1/register-call - Public endpoint for widget call registration
 export async function POST(request: NextRequest) {
@@ -88,6 +89,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Check daily minutes limit
+    if (widget.daily_minutes_enabled) {
+      const canMakeCall = await checkDailyMinutesLimit(
+        widget_id,
+        widget.daily_minutes_limit,
+        widget.daily_minutes_enabled
+      );
+
+      if (!canMakeCall) {
+        return NextResponse.json(
+          { error: 'Daily minutes limit exceeded. Try again tomorrow.' },
+          { status: 429 }
+        );
+      }
+    }
+
     // Convert all metadata values to strings for Retell API
     const stringifyMetadata = (obj: Record<string, unknown>): Record<string, string> => {
       const result: Record<string, string> = {};
@@ -131,6 +148,14 @@ export async function POST(request: NextRequest) {
 
       const retellData = await retellResponse.json();
       console.log('✅ Retell call created:', retellData.call_id);
+
+      // Log call start for usage tracking
+      await logCallStart({
+        widgetId: widget_id,
+        userId: widget.user_id,
+        callId: retellData.call_id,
+        callType: 'inbound_web'
+      });
 
       const response: RegisterCallResponse = {
         call_id: retellData.call_id,

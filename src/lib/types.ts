@@ -1,4 +1,6 @@
 export type WidgetType = 'inbound_web' | 'inbound_phone' | 'outbound_phone' | 'outbound_web';
+export type CallType = 'inbound_web' | 'inbound_phone' | 'outbound_phone' | 'outbound_web';
+export type CallStatus = 'ongoing' | 'ended' | 'error';
 
 export interface Widget {
   id: string;
@@ -10,6 +12,8 @@ export interface Widget {
   button_text: string;
   rate_limit_calls_per_hour: number | null;
   rate_limit_enabled: boolean;
+  daily_minutes_limit: number | null;
+  daily_minutes_enabled: boolean;
   access_code?: string | null;
   require_access_code: boolean;
   widget_type: WidgetType;
@@ -21,6 +25,19 @@ export interface Widget {
   created_at: string;
 }
 
+export interface CallLog {
+  id: string;
+  widget_id: string;
+  user_id: string;
+  call_id: string;
+  call_type: CallType;
+  started_at: string;
+  duration_seconds: number | null;
+  call_status: CallStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CreateWidgetRequest {
   name: string;
   retell_api_key: string;
@@ -28,6 +45,8 @@ export interface CreateWidgetRequest {
   allowed_domain: string;
   button_text?: string;
   rate_limit_calls_per_hour?: number;
+  daily_minutes_limit?: number;
+  daily_minutes_enabled?: boolean;
   access_code?: string;
   require_access_code?: boolean;
   widget_type?: WidgetType;
@@ -44,6 +63,8 @@ export interface UpdateWidgetRequest {
   allowed_domain?: string;
   button_text?: string;
   rate_limit_calls_per_hour?: number;
+  daily_minutes_limit?: number;
+  daily_minutes_enabled?: boolean;
   access_code?: string;
   require_access_code?: boolean;
   widget_type?: WidgetType;

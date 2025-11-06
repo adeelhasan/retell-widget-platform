@@ -17,6 +17,8 @@ CREATE TABLE widgets (
   button_text TEXT,
   rate_limit_calls_per_hour INTEGER, -- null = use global default
   rate_limit_enabled BOOLEAN DEFAULT true,
+  daily_minutes_limit INTEGER, -- Maximum total call minutes per day (null = no limit)
+  daily_minutes_enabled BOOLEAN DEFAULT false, -- Whether daily minutes limit is enforced
   access_code TEXT, -- Optional access code for widget protection
   require_access_code BOOLEAN DEFAULT false, -- Whether access code is required
 
@@ -69,8 +71,47 @@ ADD CONSTRAINT check_phone_number_format CHECK (
   (outbound_phone_number IS NULL OR outbound_phone_number ~ '^\+[1-9]\d{10,14}$')
 );
 
+ALTER TABLE widgets
+ADD CONSTRAINT check_daily_minutes_limit CHECK (daily_minutes_limit IS NULL OR daily_minutes_limit > 0);
+
 -- Grant permissions to authenticated users
 GRANT ALL ON widgets TO authenticated;
+GRANT USAGE ON SCHEMA public TO authenticated;
+
+-- ============================================================
+-- CALL LOGS TABLE FOR USAGE TRACKING
+-- ============================================================
+
+-- Create call_logs table
+CREATE TABLE call_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  widget_id UUID REFERENCES widgets(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  call_id TEXT NOT NULL UNIQUE,
+  call_type TEXT NOT NULL CHECK (call_type IN ('inbound_web', 'inbound_phone', 'outbound_phone', 'outbound_web')),
+  started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  duration_seconds INTEGER, -- null until synced via polling
+  call_status TEXT DEFAULT 'ongoing' CHECK (call_status IN ('ongoing', 'ended', 'error')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- Enable RLS on call_logs
+ALTER TABLE call_logs ENABLE ROW LEVEL SECURITY;
+
+-- Users can view their own call logs
+CREATE POLICY "Users can view own call logs" ON call_logs
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Create indexes for performance
+CREATE INDEX idx_call_logs_widget_id ON call_logs(widget_id);
+CREATE INDEX idx_call_logs_started_at ON call_logs(started_at DESC);
+CREATE INDEX idx_call_logs_user_id ON call_logs(user_id);
+CREATE INDEX idx_call_logs_widget_date ON call_logs(widget_id, started_at DESC);
+CREATE INDEX idx_call_logs_pending ON call_logs(started_at) WHERE duration_seconds IS NULL;
+
+-- Grant permissions
+GRANT SELECT ON call_logs TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
 
 -- ============================================================
@@ -95,7 +136,7 @@ GRANT USAGE ON SCHEMA public TO authenticated;
 --   Optional: button_text, display_text, agent_persona, opening_message, access_code
 --
 -- ============================================================
--- SECURITY FEATURES
+-- SECURITY & USAGE FEATURES
 -- ============================================================
 --
 -- access_code + require_access_code:
@@ -105,5 +146,21 @@ GRANT USAGE ON SCHEMA public TO authenticated;
 -- button_text:
 --   Custom button text (leave NULL to use widget-type defaults)
 --   Defaults applied at render time based on widget_type
+--
+-- daily_minutes_limit + daily_minutes_enabled:
+--   Control costs by limiting total call minutes per day
+--   Example: Set to 60 to allow max 60 minutes of calls per day
+--   Resets at midnight UTC
+--   Call durations tracked in call_logs table via cron job
+--
+-- call_logs table:
+--   Tracks all widget calls for usage analytics and limits
+--   duration_seconds starts as NULL, filled by cron job polling Retell API
+--   Old records auto-deleted after retention period (default 7 days)
+--   Cron job runs every 10 minutes to sync durations and cleanup
+--
+-- Environment variables needed for usage tracking:
+--   CRON_SECRET: Secret for authenticating cron job requests
+--   CALL_LOGS_RETENTION_DAYS: Days to keep logs (default: 7)
 --
 -- ============================================================
