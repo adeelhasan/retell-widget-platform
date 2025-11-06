@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { CONFIG } from '@/lib/config';
 import { isAllowedDomain, checkRateLimit } from '@/lib/security';
+import { checkDailyMinutesLimit, logCallStart } from '@/lib/usage-tracking';
 
 export async function POST(request: NextRequest) {
   try {
@@ -107,6 +108,22 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
+    // Check daily minutes limit
+    if (widget.daily_minutes_enabled) {
+      const canMakeCall = await checkDailyMinutesLimit(
+        widget_id,
+        widget.daily_minutes_limit,
+        widget.daily_minutes_enabled
+      );
+
+      if (!canMakeCall) {
+        return NextResponse.json({
+          error: 'Daily minutes limit exceeded',
+          details: 'Daily call minutes limit reached. Try again tomorrow.'
+        }, { status: 429 });
+      }
+    }
+
     // TODO: In Phase 5, add SMS verification check here
     // For now, we'll skip verification for demo purposes
 
@@ -129,6 +146,18 @@ export async function POST(request: NextRequest) {
 
     console.log('📊 Merged metadata:', mergedMetadata);
 
+    // Filter out null/undefined values - Retell API doesn't accept null values
+    const filterNullValues = (obj: Record<string, any>): Record<string, any> => {
+      return Object.entries(obj).reduce((acc, [key, value]) => {
+        if (value !== null && value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, any>);
+    };
+
+    const cleanMetadata = filterNullValues(mergedMetadata);
+
     // Call Retell AI API to initiate outbound call
     console.log('📞 Calling Retell AI API to initiate outbound call to:', formattedPhone);
 
@@ -136,8 +165,8 @@ export async function POST(request: NextRequest) {
       from_number: widget.outbound_phone_number,
       to_number: formattedPhone,
       override_agent_id: widget.agent_id,
-      metadata: mergedMetadata,
-      retell_llm_dynamic_variables: mergedMetadata
+      metadata: cleanMetadata,
+      retell_llm_dynamic_variables: cleanMetadata
     };
 
     console.log('📤 Retell API payload:', JSON.stringify(retellPayload, null, 2));
@@ -156,22 +185,25 @@ export async function POST(request: NextRequest) {
       if (!retellResponse.ok) {
         const errorData = await retellResponse.json().catch(() => ({}));
         console.error('Retell AI API error:', errorData);
-        
+
+        // Extract error message from Retell API response (they use different field names)
+        const retellErrorMessage = errorData.error_message || errorData.message || errorData.detail;
+
         if (retellResponse.status === 400) {
-          if (errorData.message?.includes('phone number') || errorData.message?.includes('invalid')) {
+          if (retellErrorMessage?.includes('phone number') || retellErrorMessage?.includes('invalid')) {
             return NextResponse.json({
               error: 'Invalid phone number',
-              details: errorData.message || 'The phone number format is not supported.'
+              details: retellErrorMessage || 'The phone number format is not supported.'
             }, { status: 400 });
-          } else if (errorData.message?.includes('agent')) {
+          } else if (retellErrorMessage?.includes('agent')) {
             return NextResponse.json({
               error: 'Agent configuration error',
-              details: 'The agent is not configured for outbound calls. Please check your Retell dashboard.'
+              details: retellErrorMessage || 'The agent is not configured for outbound calls. Please check your Retell dashboard.'
             }, { status: 400 });
           } else {
             return NextResponse.json({
               error: 'Invalid request',
-              details: errorData.message || 'Please check your configuration.'
+              details: retellErrorMessage || 'Please check your configuration.'
             }, { status: 400 });
           }
         } else if (retellResponse.status === 401) {
@@ -196,6 +228,14 @@ export async function POST(request: NextRequest) {
 
       const retellData = await retellResponse.json();
       console.log('✅ Outbound call initiated:', retellData.call_id);
+
+      // Log call start for usage tracking
+      await logCallStart({
+        widgetId: widget_id,
+        userId: widget.user_id,
+        callId: retellData.call_id,
+        callType: 'outbound_phone'
+      });
 
       return NextResponse.json({
         success: true,
