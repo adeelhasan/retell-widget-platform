@@ -147,13 +147,13 @@ export async function POST(request: NextRequest) {
     console.log('📊 Merged metadata:', mergedMetadata);
 
     // Filter out null/undefined values - Retell API doesn't accept null values
-    const filterNullValues = (obj: Record<string, any>): Record<string, any> => {
+    const filterNullValues = (obj: Record<string, string | null>): Record<string, string> => {
       return Object.entries(obj).reduce((acc, [key, value]) => {
         if (value !== null && value !== undefined) {
           acc[key] = value;
         }
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, string>);
     };
 
     const cleanMetadata = filterNullValues(mergedMetadata);
