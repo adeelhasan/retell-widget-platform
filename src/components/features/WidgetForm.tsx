@@ -335,33 +335,31 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
               )}
             />
 
-            {/* Rate Limiting - only for web calls */}
-            {(widgetType === 'inbound_web' || widgetType === 'outbound_web') && (
-              <FormField<WidgetFormData>
-                control={form.control}
-                name="rate_limit_calls_per_hour"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rate Limit (calls per hour)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="10"
-                        min="1"
-                        max="1000"
-                        {...field}
-                        value={field.value || ''}
-                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Leave empty to use global default (10 calls/hour)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            {/* Rate Limiting */}
+            <FormField<WidgetFormData>
+              control={form.control}
+              name="rate_limit_calls_per_hour"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rate Limit (calls per hour)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="10"
+                      min="1"
+                      max="1000"
+                      {...field}
+                      value={field.value || ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Maximum calls allowed per hour per widget. Leave empty to use global default (10 calls/hour)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Daily Minutes Limit */}
             <div className="space-y-4 rounded-lg border p-4">

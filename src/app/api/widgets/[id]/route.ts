@@ -71,6 +71,8 @@ async function updateWidget(
     allowed_domain,
     button_text,
     rate_limit_calls_per_hour,
+    daily_minutes_limit,
+    daily_minutes_enabled,
     access_code,
     require_access_code,
     widget_type,
@@ -121,6 +123,8 @@ async function updateWidget(
   if (allowed_domain !== undefined) updateData.allowed_domain = allowed_domain;
   if (button_text !== undefined) updateData.button_text = button_text;
   if (rate_limit_calls_per_hour !== undefined) updateData.rate_limit_calls_per_hour = rate_limit_calls_per_hour;
+  if (daily_minutes_limit !== undefined) updateData.daily_minutes_limit = daily_minutes_limit;
+  if (daily_minutes_enabled !== undefined) updateData.daily_minutes_enabled = daily_minutes_enabled;
   if (access_code !== undefined) updateData.access_code = access_code;
   if (require_access_code !== undefined) updateData.require_access_code = require_access_code;
   if (widget_type !== undefined) updateData.widget_type = widget_type;
