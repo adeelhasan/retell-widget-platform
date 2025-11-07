@@ -14,17 +14,18 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 
 - ✅ **Keeps API keys server-side** - Your Retell API keys never touch the client
 - ✅ **One-line integration** - Just add a `<script>` tag, no backend setup needed
-- ✅ **Built-in security** - Domain verification, rate limiting, and optional password protection
+- ✅ **Dynamic context passing** - Pass custom data from your webpage to voice agents (unique feature!)
+- ✅ **Built-in security** - Domain verification, database-backed rate limiting, optional password protection
 - ✅ **Multi-tenant dashboard** - Manage multiple widgets for different websites
 - ✅ **Production-ready** - Deploy to Vercel in minutes with Supabase backend
 
 ### How It Compares
 
-| Approach | Security | Setup Time | Infrastructure |
-|----------|----------|------------|----------------|
-| **Client-side Retell SDK** | ❌ API keys exposed | ⚡ 5 min | None |
-| **Custom backend** ([Retell docs](https://docs.retellai.com/get-started/web-voice-agent)) | ✅ Secure | ⏰ Hours/days | Required |
-| **This Platform** | ✅ Secure | ⚡ 10 min | Managed (Vercel + Supabase) |
+| Approach | Security | Dynamic Metadata | Setup Time | Infrastructure |
+|----------|----------|------------------|------------|----------------|
+| **Retell Native Widget** | ❌ API keys exposed | ❌ Not supported | ⚡ 5 min | None |
+| **Custom backend** ([Retell docs](https://docs.retellai.com/get-started/web-voice-agent)) | ✅ Secure | ⚠️ Requires custom code | ⏰ Hours/days | Required |
+| **This Platform** | ✅ Secure | ✅ **Built-in & easy** | ⚡ 10 min | Managed (Vercel + Supabase) |
 
 ---
 
@@ -116,6 +117,10 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 
 ## 🎨 Smart Metadata System
 
+### 🌟 Unique to This Platform: Dynamic Context Passing
+
+**Unlike Retell's native widgets**, this platform lets you pass custom metadata from your webpage directly to your voice agent. This enables truly personalized conversations based on user context.
+
 ### Automatic Context Passing
 
 Your widgets can automatically pass page context to Retell agents using hidden form fields:
@@ -133,6 +138,41 @@ Your widgets can automatically pass page context to Retell agents using hidden f
 ```
 
 **Your agent receives**: All form values as `{{customer_name}}`, `{{product_interest}}`, `{{cart_value}}`
+
+### Real-World Examples
+
+**E-commerce: Personalized Product Support**
+```html
+<form class="retell-metadata" data-widget-id="abc123">
+  <input type="hidden" name="customer_name" value="Sarah">
+  <input type="hidden" name="product_name" value="Pro Camera Lens">
+  <input type="hidden" name="cart_total" value="$849">
+  <input type="hidden" name="loyalty_tier" value="Gold Member">
+</form>
+```
+*Agent prompt*: "Hello {{customer_name}}! I see you're interested in the {{product_name}}. As a {{loyalty_tier}}, you qualify for free expedited shipping!"
+
+**Real Estate: Context-Aware Agent**
+```html
+<form class="retell-metadata" data-widget-id="abc123">
+  <input type="hidden" name="property_address" value="123 Oak Street">
+  <input type="hidden" name="listing_price" value="$650,000">
+  <input type="hidden" name="bedrooms" value="3">
+  <input type="hidden" name="square_feet" value="2100">
+</form>
+```
+*Agent prompt*: "I'm calling about {{property_address}}, the {{bedrooms}} bedroom home listed at {{listing_price}}. Would you like to schedule a viewing?"
+
+**Lead Generation: Smart Qualification**
+```html
+<form class="retell-metadata" data-widget-id="abc123">
+  <input type="hidden" name="company_name" value="TechCorp Inc">
+  <input type="hidden" name="company_size" value="50-100 employees">
+  <input type="hidden" name="plan_interest" value="Enterprise">
+  <input type="hidden" name="referral_source" value="LinkedIn Ad">
+</form>
+```
+*Agent prompt*: "Thanks for your interest from {{company_name}}! I see you came from {{referral_source}} and are interested in our {{plan_interest}} plan. Let me help you..."
 
 ### Auto-Injected System Context
 
@@ -504,29 +544,41 @@ SELECT cron.schedule(...);
 
 </details>
 
-#### Rate Limiting Limitations (Demo Project)
-
-This is a **demo/MVP project** with in-memory rate limiting. Please be aware of these limitations:
+#### Rate Limiting (Production-Ready)
 
 **Current Implementation:**
-- Rate limits are stored in-memory only (not in database)
-- Sliding window algorithm (1-hour window by default)
-- Applied to public widget endpoints: `/api/v1/register-call`, `/api/v1/outbound-call`, `/api/v1/phone-lookup`
+- ✅ Database-backed rate limiting using `call_logs` table
+- ✅ Sliding window algorithm (1-hour window by default)
+- ✅ Works reliably across server restarts and multi-instance deployments
+- ✅ Race condition prevention (rapid clicks properly blocked)
+- ✅ Applied to public widget endpoints: `/api/v1/register-call`, `/api/v1/outbound-call`
 
-**Known Limitations:**
-1. ⚠️ **Server Restarts**: Rate limit data is lost on server restart/deployment
-2. ⚠️ **Multi-Instance Deployments**: Each server instance has separate rate limits
-   - Example: 10 calls/hour limit × 3 instances = 30 effective calls/hour
-3. ⚠️ **No Audit Trail**: Call history is not logged to database
-4. ⚠️ **No Manual Reset**: Dashboard doesn't have manual rate limit reset feature yet
-5. ⚠️ **No Retry-After Info**: 429 responses don't include time until next available slot
+**How It Works:**
+1. Each call attempt queries the `call_logs` table for recent calls within the time window
+2. If count >= limit, request is blocked with HTTP 429
+3. If allowed, a placeholder entry is created immediately (prevents race conditions)
+4. After successful Retell API call, placeholder is updated with actual call ID
+5. If call fails, placeholder is deleted (cleanup)
 
-**For Production Use:**
-- Consider Redis-backed rate limiting for persistence and multi-instance support
-- Add database logging for audit trails and compliance
-- Implement rate limiting on all public endpoints
-- Add manual reset feature in dashboard for customer support
-- Consider additional bot protection (see Bot Protection section below)
+**Key Features:**
+- ✅ **Persistent**: Rate limits survive server restarts
+- ✅ **Multi-instance safe**: Works correctly with serverless/multiple instances
+- ✅ **Audit trail**: All call attempts logged to database
+- ✅ **Race condition safe**: Rapid button clicks properly blocked
+- ✅ **Per-widget configuration**: Each widget has its own configurable limit
+
+**Configuration:**
+```bash
+# Environment variables (optional, defaults shown)
+RATE_LIMIT_CALLS_PER_HOUR=10     # Global default
+RATE_LIMIT_WINDOW_MS=3600000     # 1 hour in milliseconds
+```
+
+**Per-Widget Overrides:**
+Set custom limits in the dashboard:
+- Enable/disable rate limiting per widget
+- Override global limit with widget-specific value
+- Example: VIP widgets can have higher limits
 
 #### Bot Protection Strategies
 
