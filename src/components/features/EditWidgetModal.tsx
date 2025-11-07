@@ -29,7 +29,7 @@ export function EditWidgetModal({ widget, open, onClose, onSuccess }: EditWidget
     try {
       setLoading(true);
       setError(null);
-      
+
       // Convert CreateWidgetRequest to UpdateWidgetRequest for the API
       const updateData: UpdateWidgetRequest = {
         name: data.name,
