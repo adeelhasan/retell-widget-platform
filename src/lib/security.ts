@@ -1,4 +1,5 @@
 import { CONFIG } from './config';
+import { supabaseAdmin } from './supabase-server';
 
 function isPrivateIP(hostname: string): boolean {
   // Check if hostname is a private IP address
@@ -113,44 +114,38 @@ function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Simple in-memory rate limiter
-const rateLimitStore = new Map<string, number[]>();
+/**
+ * Database-backed rate limiter using call_logs table
+ * This ensures rate limiting works reliably across serverless functions and server restarts
+ */
+export async function checkRateLimit(widgetId: string, limit: number = CONFIG.RATE_LIMITING.CALLS_PER_HOUR): Promise<boolean> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - CONFIG.RATE_LIMITING.WINDOW_MS);
 
-export function checkRateLimit(widgetId: string, limit: number = CONFIG.RATE_LIMITING.CALLS_PER_HOUR): boolean {
-  const now = Date.now();
-  const windowStart = now - CONFIG.RATE_LIMITING.WINDOW_MS;
-  
-  if (!rateLimitStore.has(widgetId)) {
-    rateLimitStore.set(widgetId, []);
-  }
-  
-  const calls = rateLimitStore.get(widgetId)!;
-  
-  // Remove old calls outside the window
-  const validCalls = calls.filter(timestamp => timestamp > windowStart);
-  rateLimitStore.set(widgetId, validCalls);
-  
-  // Check if limit exceeded
-  if (validCalls.length >= limit) {
-    return false;
-  }
-  
-  // Add current call
-  validCalls.push(now);
-  return true;
-}
+  try {
+    // Count calls in the time window
+    const { count, error } = await supabaseAdmin
+      .from('call_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('widget_id', widgetId)
+      .gte('started_at', windowStart.toISOString());
 
-// Cleanup old rate limit entries periodically
-setInterval(() => {
-  const now = Date.now();
-  const windowStart = now - CONFIG.RATE_LIMITING.WINDOW_MS;
-  
-  for (const [widgetId, calls] of rateLimitStore.entries()) {
-    const validCalls = calls.filter(timestamp => timestamp > windowStart);
-    if (validCalls.length === 0) {
-      rateLimitStore.delete(widgetId);
-    } else {
-      rateLimitStore.set(widgetId, validCalls);
+    if (error) {
+      console.error('🔒 Rate limit check error:', error);
+      // On error, allow the call but log the issue
+      return true;
     }
+
+    const callCount = count ?? 0;
+
+    console.log(`🔒 Rate limit check for widget ${widgetId}: ${callCount}/${limit} calls in the last hour`);
+
+    // Check if limit exceeded
+    return callCount < limit;
+
+  } catch (error) {
+    console.error('🔒 Rate limit check exception:', error);
+    // On exception, allow the call to avoid blocking legitimate requests
+    return true;
   }
-}, CONFIG.RATE_LIMITING.WINDOW_MS); // Cleanup every hour
+}

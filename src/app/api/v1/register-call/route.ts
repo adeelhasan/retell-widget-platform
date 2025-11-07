@@ -6,7 +6,7 @@ import { validateMetadata } from '@/lib/utils-helpers';
 
 // Create security and rate limiting utilities
 import { isAllowedDomain, checkRateLimit } from '@/lib/security';
-import { checkDailyMinutesLimit, logCallStart } from '@/lib/usage-tracking';
+import { checkDailyMinutesLimit, reserveCallSlot, updateCallId, releaseCallSlot } from '@/lib/usage-tracking';
 
 // POST /api/v1/register-call - Public endpoint for widget call registration
 export async function POST(request: NextRequest) {
@@ -81,7 +81,8 @@ export async function POST(request: NextRequest) {
     // Check rate limiting if enabled
     if (widget.rate_limit_enabled) {
       const rateLimit = widget.rate_limit_calls_per_hour || CONFIG.RATE_LIMITING.CALLS_PER_HOUR;
-      if (!checkRateLimit(widget_id, rateLimit)) {
+      const canMakeCall = await checkRateLimit(widget_id, rateLimit);
+      if (!canMakeCall) {
         return NextResponse.json(
           { error: 'Rate limit exceeded. Please try again later.' },
           { status: 429 }
@@ -104,6 +105,14 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+
+    // 🔒 CRITICAL: Reserve a call slot IMMEDIATELY to prevent race conditions
+    // This creates a placeholder entry in call_logs that counts toward rate limits
+    const tempCallId = await reserveCallSlot({
+      widgetId: widget_id,
+      userId: widget.user_id,
+      callType: 'inbound_web'
+    });
 
     // Convert all metadata values to strings for Retell API
     const stringifyMetadata = (obj: Record<string, unknown>): Record<string, string> => {
@@ -143,19 +152,18 @@ export async function POST(request: NextRequest) {
       if (!retellResponse.ok) {
         const errorData = await retellResponse.json().catch(() => ({}));
         console.error('Retell AI API error:', errorData);
+
+        // Release the call slot since the call failed
+        await releaseCallSlot(tempCallId);
+
         throw new Error(`Retell AI API error: ${retellResponse.status} ${errorData.message || retellResponse.statusText}`);
       }
 
       const retellData = await retellResponse.json();
       console.log('✅ Retell call created:', retellData.call_id);
 
-      // Log call start for usage tracking
-      await logCallStart({
-        widgetId: widget_id,
-        userId: widget.user_id,
-        callId: retellData.call_id,
-        callType: 'inbound_web'
-      });
+      // Update the placeholder with the actual Retell call ID
+      await updateCallId(tempCallId, retellData.call_id);
 
       const response: RegisterCallResponse = {
         call_id: retellData.call_id,
@@ -166,16 +174,19 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
       console.error('Failed to create Retell call:', error);
-      
+
+      // Release the call slot since an error occurred
+      await releaseCallSlot(tempCallId);
+
       if (error instanceof Error && error.name === 'AbortError') {
         return NextResponse.json(
-          { error: 'Retell AI API timeout' }, 
+          { error: 'Retell AI API timeout' },
           { status: 408 }
         );
       }
-      
+
       return NextResponse.json(
-        { error: 'Failed to create voice call. Please try again.' }, 
+        { error: 'Failed to create voice call. Please try again.' },
         { status: 500 }
       );
     }

@@ -46,6 +46,73 @@ export async function checkDailyMinutesLimit(
 }
 
 /**
+ * Create a placeholder call log entry BEFORE making the actual call
+ * This prevents race conditions in rate limiting
+ * Returns a temporary ID that can be updated later
+ */
+export async function reserveCallSlot(params: {
+  widgetId: string;
+  userId: string;
+  callType: 'inbound_web' | 'inbound_phone' | 'outbound_phone' | 'outbound_web';
+}): Promise<string> {
+  // Create a temporary call_id that will be updated after Retell API call
+  const tempCallId = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+  const { error } = await supabaseAdmin
+    .from('call_logs')
+    .insert({
+      widget_id: params.widgetId,
+      user_id: params.userId,
+      call_id: tempCallId,
+      call_type: params.callType,
+      started_at: new Date().toISOString(),
+      duration_seconds: null,
+      call_status: 'ongoing'
+    });
+
+  if (error) {
+    console.error('Error reserving call slot:', error);
+    throw error;
+  }
+
+  console.log(`🔒 Reserved call slot: ${tempCallId} for widget ${params.widgetId}`);
+  return tempCallId;
+}
+
+/**
+ * Update the placeholder entry with the actual Retell call ID
+ */
+export async function updateCallId(tempCallId: string, actualCallId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('call_logs')
+    .update({ call_id: actualCallId })
+    .eq('call_id', tempCallId);
+
+  if (error) {
+    console.error('Error updating call ID:', error);
+    throw error;
+  }
+
+  console.log(`✅ Updated call ID from ${tempCallId} to ${actualCallId}`);
+}
+
+/**
+ * Delete a placeholder entry if the actual call failed
+ */
+export async function releaseCallSlot(tempCallId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('call_logs')
+    .delete()
+    .eq('call_id', tempCallId);
+
+  if (error) {
+    console.error('Error releasing call slot:', error);
+  }
+
+  console.log(`🔓 Released call slot: ${tempCallId}`);
+}
+
+/**
  * Log call start to database
  * Duration will be filled later by cron job
  */

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { CONFIG } from '@/lib/config';
 import { isAllowedDomain, checkRateLimit } from '@/lib/security';
-import { checkDailyMinutesLimit, logCallStart } from '@/lib/usage-tracking';
+import { checkDailyMinutesLimit, reserveCallSlot, updateCallId, releaseCallSlot } from '@/lib/usage-tracking';
 
 export async function POST(request: NextRequest) {
   try {
@@ -100,7 +100,8 @@ export async function POST(request: NextRequest) {
     // Check rate limiting (important for outbound calls as they cost money!)
     // Use stricter limit for outbound calls - use widget setting or default
     const rateLimit = widget.rate_limit_calls_per_hour || CONFIG.RATE_LIMITING.CALLS_PER_HOUR;
-    if (!checkRateLimit(widget_id, rateLimit)) {
+    const canMakeCall = await checkRateLimit(widget_id, rateLimit);
+    if (!canMakeCall) {
       return NextResponse.json({
         error: 'Rate limit exceeded',
         details: 'Too many calls requested. Please try again later.',
@@ -126,6 +127,14 @@ export async function POST(request: NextRequest) {
 
     // TODO: In Phase 5, add SMS verification check here
     // For now, we'll skip verification for demo purposes
+
+    // 🔒 CRITICAL: Reserve a call slot IMMEDIATELY to prevent race conditions
+    // This creates a placeholder entry in call_logs that counts toward rate limits
+    const tempCallId = await reserveCallSlot({
+      widgetId: widget_id,
+      userId: widget.user_id,
+      callType: 'outbound_phone'
+    });
 
     // Merge metadata: Page-level data takes precedence over widget defaults
     const mergedMetadata = {
@@ -186,6 +195,9 @@ export async function POST(request: NextRequest) {
         const errorData = await retellResponse.json().catch(() => ({}));
         console.error('Retell AI API error:', errorData);
 
+        // Release the call slot since the call failed
+        await releaseCallSlot(tempCallId);
+
         // Extract error message from Retell API response (they use different field names)
         const retellErrorMessage = errorData.error_message || errorData.message || errorData.detail;
 
@@ -229,13 +241,8 @@ export async function POST(request: NextRequest) {
       const retellData = await retellResponse.json();
       console.log('✅ Outbound call initiated:', retellData.call_id);
 
-      // Log call start for usage tracking
-      await logCallStart({
-        widgetId: widget_id,
-        userId: widget.user_id,
-        callId: retellData.call_id,
-        callType: 'outbound_phone'
-      });
+      // Update the placeholder with the actual Retell call ID
+      await updateCallId(tempCallId, retellData.call_id);
 
       return NextResponse.json({
         success: true,
@@ -246,14 +253,17 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
       console.error('Failed to initiate outbound call:', error);
-      
+
+      // Release the call slot since an error occurred
+      await releaseCallSlot(tempCallId);
+
       if (error instanceof Error && error.name === 'AbortError') {
         return NextResponse.json({
           error: 'Request timeout',
           details: 'Unable to initiate call due to network timeout. Please try again.'
         }, { status: 408 });
       }
-      
+
       return NextResponse.json({
         error: 'Failed to initiate call',
         details: 'There was an issue connecting to the voice service. Please try again later.'
