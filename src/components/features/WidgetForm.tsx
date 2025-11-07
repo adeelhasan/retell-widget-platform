@@ -21,6 +21,7 @@ interface WidgetFormProps {
   onCancel: () => void;
   loading?: boolean;
   mode?: 'create' | 'edit';
+  showCard?: boolean; // Whether to wrap in Card component
 }
 
 // Zod validation schema with automatic trimming on all string fields
@@ -90,7 +91,7 @@ const widgetFormSchema = z.object({
 
 type WidgetFormData = z.infer<typeof widgetFormSchema>;
 
-export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create' }: WidgetFormProps) {
+export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create', showCard = true }: WidgetFormProps) {
   const isEditMode = mode === 'edit' || !!widget;
 
   const form = useForm<WidgetFormData>({
@@ -127,14 +128,9 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
     onSubmit(data as CreateWidgetRequest);
   };
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{isEditMode ? 'Edit Widget' : 'Create New Widget'}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
             {/* Widget Type Selection */}
             <FormField
               control={form.control}
@@ -486,9 +482,22 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
   );
+
+  if (showCard) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{isEditMode ? 'Edit Widget' : 'Create New Widget'}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {formContent}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return formContent;
 }
 
 // Helper functions

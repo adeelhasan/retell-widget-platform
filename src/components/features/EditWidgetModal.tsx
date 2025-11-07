@@ -86,6 +86,7 @@ export function EditWidgetModal({ widget, open, onClose, onSuccess }: EditWidget
           onSubmit={handleSubmit}
           onCancel={handleClose}
           loading={loading}
+          showCard={false}
         />
       </DialogContent>
     </Dialog>
