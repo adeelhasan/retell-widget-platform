@@ -38,8 +38,15 @@ export function EditWidgetModal({ widget, open, onClose, onSuccess }: EditWidget
         allowed_domain: data.allowed_domain,
         button_text: data.button_text,
         rate_limit_calls_per_hour: data.rate_limit_calls_per_hour,
+        daily_minutes_limit: data.daily_minutes_limit,
+        daily_minutes_enabled: data.daily_minutes_enabled,
         access_code: data.access_code,
-        require_access_code: data.require_access_code
+        require_access_code: data.require_access_code,
+        widget_type: data.widget_type,
+        display_text: data.display_text,
+        agent_persona: data.agent_persona,
+        opening_message: data.opening_message,
+        outbound_phone_number: data.outbound_phone_number
       };
       
       const updatedWidget = await apiClient.updateWidget(widget.id, updateData);
