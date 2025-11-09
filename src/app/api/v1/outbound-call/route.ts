@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { CONFIG } from '@/lib/config';
-import { isAllowedDomain, checkRateLimit } from '@/lib/security';
+import { isAllowedDomains, checkRateLimit } from '@/lib/security';
 import { checkDailyMinutesLimit, reserveCallSlot, updateCallId, releaseCallSlot } from '@/lib/usage-tracking';
 
 export async function POST(request: NextRequest) {
@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
     if (!origin) {
       return NextResponse.json({ error: 'Missing origin header' }, { status: 400 });
     }
-    
-    if (!isAllowedDomain(origin, widget.allowed_domain)) {
+
+    if (!isAllowedDomains(origin, widget.allowed_domain)) {
       return NextResponse.json({ error: 'Domain not authorized' }, { status: 403 });
     }
 

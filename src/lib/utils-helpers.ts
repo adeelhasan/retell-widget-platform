@@ -1,5 +1,8 @@
 import { CONFIG } from './config';
 
+// Delimiter for storing multiple domains (matches backend security.ts)
+const DOMAIN_DELIMITER = '|||';
+
 export function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -13,6 +16,14 @@ export function validateWidgetName(name: string): boolean {
 }
 
 export function validateDomain(domain: string): boolean {
+  // Check if multiple domains (contains delimiter)
+  if (domain.includes(DOMAIN_DELIMITER)) {
+    const domains = domain.split(DOMAIN_DELIMITER).map(d => d.trim()).filter(d => d);
+    // All domains must be valid and at least one domain must exist
+    return domains.length > 0 && domains.every(d => validateDomainPattern(d));
+  }
+
+  // Single domain - use existing validation
   return validateDomainPattern(domain);
 }
 

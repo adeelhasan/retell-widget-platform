@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { isAllowedDomain } from '@/lib/security';
+import { isAllowedDomains } from '@/lib/security';
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,12 +44,12 @@ export async function GET(request: NextRequest) {
     }
     
     console.log('🔧 Using effective origin:', effectiveOrigin);
-    
-    if (!isAllowedDomain(effectiveOrigin, widget.allowed_domain)) {
+
+    if (!isAllowedDomains(effectiveOrigin, widget.allowed_domain)) {
       console.log('❌ Domain not authorized:', { origin, effectiveOrigin, allowed_domain: widget.allowed_domain });
       return NextResponse.json({ error: 'Domain not authorized' }, { status: 403 });
     }
-    
+
     console.log('✅ Domain authorized for widget:', widget.id);
 
     // Return widget configuration (excluding sensitive data like access_code value)

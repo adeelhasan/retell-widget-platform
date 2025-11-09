@@ -14,6 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Widget, CreateWidgetRequest, WidgetType } from '@/lib/types';
+import { PlusCircle, MinusCircle } from 'lucide-react';
+import { useFieldArray } from 'react-hook-form';
+
+// Delimiter for storing multiple domains (matches backend)
+const DOMAIN_DELIMITER = '|||';
 
 interface WidgetFormProps {
   widget?: Widget;
@@ -39,9 +44,9 @@ const widgetFormSchema = z.object({
     .trim()
     .min(1, "Agent ID is required")
     .startsWith('agent_', "Agent ID must start with 'agent_'"),
-  allowed_domain: z.string()
-    .trim()
-    .min(1, "Allowed domain is required"),
+  allowed_domains: z.array(z.object({
+    domain: z.string().trim().min(1, "Domain cannot be empty")
+  })).min(1, "At least one domain is required"),
   button_text: z.string()
     .trim()
     .max(50, "Button text must be 50 characters or less")
@@ -94,6 +99,12 @@ type WidgetFormData = z.infer<typeof widgetFormSchema>;
 export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create', showCard = true }: WidgetFormProps) {
   const isEditMode = mode === 'edit' || !!widget;
 
+  // Parse allowed_domain(s) into array format for the form
+  const parseDomainsFromString = (domainsStr: string | undefined): { domain: string }[] => {
+    if (!domainsStr) return [{ domain: '' }];
+    return domainsStr.split(DOMAIN_DELIMITER).map(d => ({ domain: d.trim() })).filter(d => d.domain);
+  };
+
   const form = useForm<WidgetFormData>({
     resolver: zodResolver(widgetFormSchema) as any,
     defaultValues: {
@@ -101,7 +112,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
       name: widget?.name || '',
       retell_api_key: widget?.retell_api_key || '',
       agent_id: widget?.agent_id || '',
-      allowed_domain: widget?.allowed_domain || '',
+      allowed_domains: parseDomainsFromString(widget?.allowed_domain),
       button_text: widget?.button_text || '',
       rate_limit_calls_per_hour: widget?.rate_limit_calls_per_hour ?? undefined,
       daily_minutes_limit: widget?.daily_minutes_limit ?? undefined,
@@ -115,6 +126,12 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
     },
   });
 
+  // Setup field array for dynamic domain inputs
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'allowed_domains',
+  });
+
   const widgetType = form.watch('widget_type');
 
   // Update widget type (button text will use render-time defaults)
@@ -124,8 +141,19 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
   };
 
   const handleFormSubmit = (data: WidgetFormData) => {
-    // Data is already trimmed and validated by Zod
-    onSubmit(data as CreateWidgetRequest);
+    // Convert allowed_domains array back to delimited string
+    const domainsString = data.allowed_domains.map(d => d.domain.trim()).join(DOMAIN_DELIMITER);
+
+    // Transform data to match CreateWidgetRequest format
+    const submitData = {
+      ...data,
+      allowed_domain: domainsString,
+    };
+
+    // Remove the allowed_domains array field before submitting
+    const { allowed_domains, ...finalData } = submitData;
+
+    onSubmit(finalData as CreateWidgetRequest);
   };
 
   const formContent = (
@@ -227,29 +255,68 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
               )}
             />
 
-            {/* Allowed Domain */}
-            <FormField
-              control={form.control}
-              name="allowed_domain"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Allowed Domain</FormLabel>
-                  <FormControl>
-                    <Input placeholder="domain.com or *.domain.com" {...field} />
-                  </FormControl>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <p>Supported formats:</p>
-                    <ul className="ml-4 space-y-0.5">
-                      <li>• <code className="bg-muted px-1 rounded">x.ai</code> - exact domain</li>
-                      <li>• <code className="bg-muted px-1 rounded">*.x.ai</code> - any subdomain of x.ai</li>
-                      <li>• <code className="bg-muted px-1 rounded">*.domain.*</code> - domain with any TLD</li>
-                      <li>• <code className="bg-muted px-1 rounded">localhost</code> - for development</li>
-                    </ul>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Allowed Domains - Multi-domain input with +/- buttons */}
+            <div className="space-y-2">
+              <FormLabel>Allowed Domains *</FormLabel>
+              <div className="space-y-3">
+                {fields.map((field, index) => (
+                  <FormField
+                    key={field.id}
+                    control={form.control}
+                    name={`allowed_domains.${index}.domain`}
+                    render={({ field: domainField }) => (
+                      <FormItem>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input
+                              placeholder="domain.com or *.domain.com or localhost"
+                              {...domainField}
+                              className="flex-1"
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (fields.length > 1) {
+                                remove(index);
+                              }
+                            }}
+                            disabled={fields.length === 1}
+                            title={fields.length === 1 ? "At least one domain is required" : "Remove domain"}
+                          >
+                            <MinusCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => append({ domain: '' })}
+                className="w-full"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Add Another Domain
+              </Button>
+
+              <div className="text-sm text-muted-foreground space-y-1 mt-2">
+                <p>Supported formats:</p>
+                <ul className="ml-4 space-y-0.5">
+                  <li>• <code className="bg-muted px-1 rounded">example.com</code> - exact domain</li>
+                  <li>• <code className="bg-muted px-1 rounded">*.example.com</code> - any subdomain of example.com</li>
+                  <li>• <code className="bg-muted px-1 rounded">*.domain.*</code> - domain with any TLD</li>
+                  <li>• <code className="bg-muted px-1 rounded">localhost</code> - for development</li>
+                </ul>
+              </div>
+            </div>
 
             {/* Type-specific fields */}
             {widgetType === 'outbound_phone' && (

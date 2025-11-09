@@ -5,7 +5,7 @@ import { CONFIG } from '@/lib/config';
 import { validateMetadata } from '@/lib/utils-helpers';
 
 // Create security and rate limiting utilities
-import { isAllowedDomain, checkRateLimit } from '@/lib/security';
+import { isAllowedDomains, checkRateLimit } from '@/lib/security';
 import { checkDailyMinutesLimit, reserveCallSlot, updateCallId, releaseCallSlot } from '@/lib/usage-tracking';
 
 // POST /api/v1/register-call - Public endpoint for widget call registration
@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify domain authorization
-    if (!isAllowedDomain(origin, widget.allowed_domain)) {
+    if (!isAllowedDomains(origin, widget.allowed_domain)) {
       return NextResponse.json(
-        { error: 'Domain not authorized for this widget' }, 
+        { error: 'Domain not authorized for this widget' },
         { status: 403 }
       );
     }

@@ -1,6 +1,9 @@
 import { CONFIG } from './config';
 import { supabaseAdmin } from './supabase-server';
 
+// Delimiter for storing multiple domains in a single column
+const DOMAIN_DELIMITER = '|||';
+
 function isPrivateIP(hostname: string): boolean {
   // Check if hostname is a private IP address
   const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
@@ -112,6 +115,29 @@ function matchesWildcardPattern(hostname: string, pattern: string): boolean {
 
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Check if origin is allowed by any of the domains in the allowedDomainsStr
+ * Supports multiple domains separated by DOMAIN_DELIMITER (|||)
+ * Backward compatible: works with single domain strings
+ */
+export function isAllowedDomains(origin: string, allowedDomainsStr: string): boolean {
+  if (!origin || !allowedDomainsStr) {
+    console.log('❌ isAllowedDomains: Missing origin or allowedDomainsStr', { origin, allowedDomainsStr });
+    return false;
+  }
+
+  // Split by delimiter and trim each domain
+  const domains = allowedDomainsStr
+    .split(DOMAIN_DELIMITER)
+    .map(d => d.trim())
+    .filter(d => d.length > 0);
+
+  console.log('🔍 isAllowedDomains: Checking origin against domains', { origin, domains });
+
+  // Check each domain until one matches
+  return domains.some(domain => isAllowedDomain(origin, domain));
 }
 
 /**
