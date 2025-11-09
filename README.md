@@ -1,6 +1,6 @@
 # Retell Widget Platform
 
-A multi-tenant SaaS platform for embedding Retell AI voice agents on websites through simple script tags.
+A multi-tenant SaaS platform for embedding Retell AI voice agents on websites through simple script tags. **Send dynamic context from your webpages to voice agents** - no backend coding required.
 
 ## Why This Project?
 
@@ -12,9 +12,9 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 
 **This platform solves all of that.** It provides a secure, hosted middleware layer that:
 
+- 🌟 **Dynamic metadata passing** - Pass context from your webpage to voice agents (customer name, product details, cart value, etc.) - **unique to this platform!**
 - ✅ **Keeps API keys server-side** - Your Retell API keys never touch the client
 - ✅ **One-line integration** - Just add a `<script>` tag, no backend setup needed
-- ✅ **Dynamic context passing** - Pass custom data from your webpage to voice agents (unique feature!)
 - ✅ **Built-in security** - Domain verification, database-backed rate limiting, optional password protection
 - ✅ **Multi-tenant dashboard** - Manage multiple widgets for different websites
 - ✅ **Production-ready** - Deploy to Vercel in minutes with Supabase backend
@@ -578,7 +578,8 @@ RATE_LIMIT_WINDOW_MS=3600000     # 1 hour in milliseconds
 Set custom limits in the dashboard:
 - Enable/disable rate limiting per widget
 - Override global limit with widget-specific value
-- Example: VIP widgets can have higher limits
+- Set to `0` to use the system default (10 calls/hour)
+- Example: VIP widgets can have higher limits (e.g., 100 calls/hour)
 
 #### Bot Protection Strategies
 
