@@ -71,36 +71,7 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Customization Options */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium">Customization (Optional)</h4>
-            
-            <div className="space-y-2">
-              <Label htmlFor="buttonText">Custom Button Text</Label>
-              <Input
-                id="buttonText"
-                placeholder={widget.button_text}
-                value={customButtonText}
-                onChange={(e) => setCustomButtonText(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="metadata">Custom Metadata (JSON)</Label>
-              <Textarea
-                id="metadata"
-                placeholder='{"property_id": "123", "user_type": "premium"}'
-                value={customMetadata}
-                onChange={(e) => setCustomMetadata(e.target.value)}
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground">
-                Optional JSON data to pass to your voice agent
-              </p>
-            </div>
-          </div>
-
-          {/* Generated Embed Code */}
+          {/* Generated Embed Code - MOVED TO TOP */}
           <div className="space-y-2">
             <Label htmlFor="embedCode">Embed Code</Label>
             <div className="relative">
@@ -129,6 +100,46 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
                   </>
                 )}
               </Button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t pt-6">
+            {/* Customization Options - MOVED TO BOTTOM */}
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium">Optional: Customize This Embed Code</h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  These customizations are <strong>not saved</strong> to your widget. They only affect this specific embed code snippet.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="buttonText">Custom Button Text</Label>
+                <Input
+                  id="buttonText"
+                  placeholder={`Leave empty to use widget default: "${widget.button_text || 'Start Voice Demo'}"`}
+                  value={customButtonText}
+                  onChange={(e) => setCustomButtonText(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Override the button text for this specific embed code only
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="metadata">Custom Metadata (JSON)</Label>
+                <Textarea
+                  id="metadata"
+                  placeholder='{"property_id": "123", "user_type": "premium"}'
+                  value={customMetadata}
+                  onChange={(e) => setCustomMetadata(e.target.value)}
+                  rows={3}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add custom data to pass to your voice agent at runtime
+                </p>
+              </div>
             </div>
           </div>
 

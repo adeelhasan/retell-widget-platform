@@ -8,12 +8,10 @@ import { AppLayout } from '@/components/layouts/AppLayout';
 import { PageHeader } from '@/components/sections/PageHeader';
 import { WidgetGrid } from '@/components/sections/WidgetGrid';
 import { EmptyState } from '@/components/sections/EmptyState';
-import { WidgetForm } from '@/components/features/WidgetForm';
 import { EmbedCodeModal } from '@/components/features/EmbedCodeModal';
-import { EditWidgetModal } from '@/components/features/EditWidgetModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { Widget, CreateWidgetRequest } from '@/lib/types';
+import { Widget } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
 
 export default function Dashboard() {
@@ -21,12 +19,8 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [showForm, setShowForm] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
   const [showEmbedModal, setShowEmbedModal] = useState(false);
-  const [editingWidget, setEditingWidget] = useState<Widget | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -62,20 +56,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleCreateWidget = async (data: CreateWidgetRequest) => {
-    setCreating(true);
-    try {
-      const newWidget = await apiClient.createWidget(data);
-      setWidgets(prev => [newWidget, ...prev]);
-      setShowForm(false);
-    } catch (error) {
-      console.error('Failed to create widget:', error);
-      alert('Failed to create widget. Please try again.');
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const handleDeleteWidget = async (id: string) => {
     try {
       await apiClient.deleteWidget(id);
@@ -97,17 +77,7 @@ export default function Dashboard() {
   };
 
   const handleEditWidget = (widget: Widget) => {
-    setEditingWidget(widget);
-    setShowEditModal(true);
-  };
-
-  const handleCloseEditModal = () => {
-    setShowEditModal(false);
-    setEditingWidget(null);
-  };
-
-  const handleEditSuccess = (updatedWidget: Widget) => {
-    setWidgets(prev => prev.map(w => w.id === updatedWidget.id ? updatedWidget : w));
+    router.push(`/dashboard/widgets/${widget.id}/edit`);
   };
 
   if (loading) {
@@ -118,20 +88,8 @@ export default function Dashboard() {
     );
   }
 
-  if (showForm) {
-    return (
-      <AppLayout>
-        <WidgetForm
-          onSubmit={handleCreateWidget}
-          onCancel={() => setShowForm(false)}
-          loading={creating}
-        />
-      </AppLayout>
-    );
-  }
-
   const headerAction = (
-    <Button onClick={() => setShowForm(true)}>
+    <Button onClick={() => router.push('/dashboard/widgets/new')}>
       <Plus className="mr-2 h-4 w-4" />
       Create Widget
     </Button>
@@ -157,7 +115,7 @@ export default function Dashboard() {
           title="No widgets yet"
           description="Create your first widget to get started with voice AI demos"
           action={
-            <Button onClick={() => setShowForm(true)}>
+            <Button onClick={() => router.push('/dashboard/widgets/new')}>
               <Plus className="mr-2 h-4 w-4" />
               Create Your First Widget
             </Button>
@@ -169,13 +127,6 @@ export default function Dashboard() {
         widget={selectedWidget}
         open={showEmbedModal}
         onClose={handleCloseEmbedModal}
-      />
-
-      <EditWidgetModal
-        widget={editingWidget}
-        open={showEditModal}
-        onClose={handleCloseEditModal}
-        onSuccess={handleEditSuccess}
       />
     </AppLayout>
   );

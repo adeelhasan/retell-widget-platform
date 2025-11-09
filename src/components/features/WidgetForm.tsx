@@ -52,7 +52,7 @@ const widgetFormSchema = z.object({
     .max(50, "Button text must be 50 characters or less")
     .optional(),
   rate_limit_calls_per_hour: z.union([
-    z.number().int().min(1, "Must be at least 1").max(1000, "Must be 1000 or less"),
+    z.number().int().min(0, "Must be at least 0").max(1000, "Must be 1000 or less"),
     z.undefined()
   ]),
   daily_minutes_limit: z.union([
@@ -148,6 +148,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
     const submitData = {
       ...data,
       allowed_domain: domainsString,
+      // Convert 0 to undefined for rate_limit (0 means use system default)
+      rate_limit_calls_per_hour: data.rate_limit_calls_per_hour === 0 ? undefined : data.rate_limit_calls_per_hour,
     };
 
     // Remove the allowed_domains array field before submitting
@@ -413,7 +415,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                     <Input
                       type="number"
                       placeholder="10"
-                      min="1"
+                      min="0"
                       max="1000"
                       {...field}
                       value={field.value || ''}
@@ -421,7 +423,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                     />
                   </FormControl>
                   <FormDescription>
-                    Maximum calls allowed per hour per widget. Leave empty to use global default (10 calls/hour)
+                    Leave at 0 for system default, or set custom limit (1-1000 calls/hour)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -477,14 +479,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                       </FormItem>
                     )}
                   />
-                  <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-900/20 px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="font-medium mb-1">ℹ️ How it works:</p>
-                    <ul className="ml-4 space-y-1 text-xs">
-                      <li>• Limits are enforced when calls start</li>
-                      <li>• Call durations are synced once daily at midnight UTC</li>
-                      <li>• Prevents budget overruns from long calls</li>
-                    </ul>
-                  </div>
                 </>
               )}
             </div>

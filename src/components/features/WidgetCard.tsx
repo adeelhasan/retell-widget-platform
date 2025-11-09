@@ -2,16 +2,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Copy, Edit, Trash, Phone, Lock } from 'lucide-react';
+import { Copy, Edit, Trash, Phone, Lock } from 'lucide-react';
 import { Widget, WidgetType } from '@/lib/types';
 import { formatDate } from '@/lib/utils-helpers';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface WidgetCardProps {
   widget: Widget;
@@ -19,6 +12,15 @@ interface WidgetCardProps {
   onEdit?: (widget: Widget) => void;
   onCopyEmbed?: (widget: Widget) => void;
 }
+
+// Delimiter for parsing multiple domains (matches backend)
+const DOMAIN_DELIMITER = '|||';
+
+// Parse domains from delimited string
+const parseDomains = (domainsStr: string): string[] => {
+  if (!domainsStr) return [];
+  return domainsStr.split(DOMAIN_DELIMITER).map(d => d.trim()).filter(d => d);
+};
 
 export function WidgetCard({ widget, onDelete, onEdit, onCopyEmbed }: WidgetCardProps) {
   const handleCopyEmbed = () => {
@@ -67,28 +69,25 @@ export function WidgetCard({ widget, onDelete, onEdit, onCopyEmbed }: WidgetCard
             )}
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleCopyEmbed}>
-              <Copy className="mr-2 h-4 w-4" />
-              Copy Embed Code
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleEdit}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Widget
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-              <Trash className="mr-2 h-4 w-4" />
-              Delete Widget
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            title="Edit widget"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="text-destructive hover:text-destructive"
+            title="Delete widget"
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-2 text-sm text-muted-foreground mb-4">
@@ -103,7 +102,18 @@ export function WidgetCard({ widget, onDelete, onEdit, onCopyEmbed }: WidgetCard
               <Copy className="h-3 w-3" />
             </button>
           </p>
-          <p><span className="font-medium">Domain:</span> {widget.allowed_domain}</p>
+          <div>
+            <span className="font-medium block mb-1">
+              {parseDomains(widget.allowed_domain).length > 1 ? 'Domains:' : 'Domain:'}
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {parseDomains(widget.allowed_domain).map((domain, idx) => (
+                <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-700 border border-blue-200">
+                  {domain}
+                </span>
+              ))}
+            </div>
+          </div>
           <p><span className="font-medium">Agent ID:</span> {widget.agent_id}</p>
           <p><span className="font-medium">Created:</span> {formatDate(widget.created_at)}</p>
 
