@@ -1,6 +1,13 @@
+'use client';
+
+import { useEffect } from 'react';
 import RetellWidget from '@/components/RetellWidget';
 
 export default function WidgetReactTest() {
+  useEffect(() => {
+    document.title = 'Widget Test - Retell Widget Platform';
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full text-center">

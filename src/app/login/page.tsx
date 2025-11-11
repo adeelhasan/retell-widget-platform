@@ -9,6 +9,8 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
+    document.title = 'Sign In - Retell Widget Platform';
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         router.push('/dashboard');

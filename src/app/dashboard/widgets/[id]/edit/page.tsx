@@ -21,6 +21,8 @@ export default function EditWidgetPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    document.title = 'Edit Widget - Retell Widget Platform';
+
     async function fetchWidget() {
       try {
         const data = await apiClient.getWidget(widgetId);

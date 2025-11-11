@@ -15,14 +15,16 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = 'Settings - Retell Widget Platform';
+
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         router.push('/login');
         return;
       }
-      
+
       setUser(user);
       setLoading(false);
     };

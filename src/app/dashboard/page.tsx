@@ -23,14 +23,16 @@ export default function Dashboard() {
   const [showEmbedModal, setShowEmbedModal] = useState(false);
 
   useEffect(() => {
+    document.title = 'Dashboard - Retell Widget Platform';
+
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         router.push('/login');
         return;
       }
-      
+
       setUser(user);
       await loadWidgets();
       setLoading(false);

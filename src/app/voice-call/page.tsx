@@ -12,8 +12,10 @@ function VoiceCallContent() {
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
 
   useEffect(() => {
+    document.title = 'Voice Call - Retell Widget Platform';
+
     const token = searchParams.get('token');
-    
+
     if (!token) {
       setCallState('error');
       return;

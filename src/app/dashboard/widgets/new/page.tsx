@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/layouts/AppLayout';
 import { WidgetForm } from '@/components/features/WidgetForm';
@@ -13,6 +13,10 @@ import { toast } from 'sonner';
 export default function NewWidgetPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Create Widget - Retell Widget Platform';
+  }, []);
 
   const handleSubmit = async (data: CreateWidgetRequest) => {
     setLoading(true);
