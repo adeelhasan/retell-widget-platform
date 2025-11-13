@@ -104,8 +104,6 @@ export async function POST(request: NextRequest) {
       require_access_code,
       widget_type,
       display_text,
-      agent_persona,
-      opening_message,
       outbound_phone_number
     } = body;
     
@@ -162,8 +160,6 @@ export async function POST(request: NextRequest) {
         require_access_code: require_access_code || false,
         widget_type: widget_type || 'inbound_web',
         display_text,
-        agent_persona,
-        opening_message,
         outbound_phone_number
       })
       .select()

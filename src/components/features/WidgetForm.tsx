@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Widget, CreateWidgetRequest, WidgetType } from '@/lib/types';
 import { PlusCircle, MinusCircle } from 'lucide-react';
@@ -68,12 +67,16 @@ const widgetFormSchema = z.object({
     .optional()
     .or(z.literal('')),
   display_text: z.string().trim().optional(),
-  agent_persona: z.string().trim().max(100, "Agent persona must be 100 characters or less").optional(),
-  opening_message: z.string().trim().max(500, "Opening message must be 500 characters or less").optional(),
   outbound_phone_number: z.string()
     .trim()
-    .regex(/^\+[1-9]\d{10,14}$/, "Must be in E.164 format (e.g., +12025551234)")
-    .optional(),
+    .optional()
+    .refine((val) => {
+      // Only validate format if a value is provided
+      if (!val || val === '') return true;
+      return /^\+[1-9]\d{10,14}$/.test(val);
+    }, {
+      message: "Must be in E.164 format (e.g., +12025551234)"
+    }),
 }).refine((data) => {
   // Outbound phone widgets require outbound_phone_number
   if (data.widget_type === 'outbound_phone' && !data.outbound_phone_number) {
@@ -120,8 +123,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
       require_access_code: widget?.require_access_code || false,
       access_code: widget?.access_code || '',
       display_text: widget?.display_text || '',
-      agent_persona: widget?.agent_persona || '',
-      opening_message: widget?.opening_message || '',
       outbound_phone_number: widget?.outbound_phone_number || '',
     },
   });
@@ -141,8 +142,16 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
   };
 
   const handleFormSubmit = (data: WidgetFormData) => {
+    console.log('Form submitted with data:', data);
+    console.log('Form errors:', form.formState.errors);
+
     // Convert allowed_domains array back to delimited string
     const domainsString = data.allowed_domains.map(d => d.domain.trim()).join(DOMAIN_DELIMITER);
+
+    // Helper function to convert empty strings to undefined
+    const emptyToUndefined = (value: string | undefined) => {
+      return value && value.trim() !== '' ? value : undefined;
+    };
 
     // Transform data to match CreateWidgetRequest format
     const submitData = {
@@ -150,17 +159,27 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
       allowed_domain: domainsString,
       // Convert 0 to undefined for rate_limit (0 means use system default)
       rate_limit_calls_per_hour: data.rate_limit_calls_per_hour === 0 ? undefined : data.rate_limit_calls_per_hour,
+      // Convert empty strings to undefined for all optional string fields (database constraints)
+      button_text: emptyToUndefined(data.button_text),
+      access_code: emptyToUndefined(data.access_code),
+      display_text: emptyToUndefined(data.display_text),
+      outbound_phone_number: emptyToUndefined(data.outbound_phone_number),
     };
 
     // Remove the allowed_domains array field before submitting
     const { allowed_domains, ...finalData } = submitData;
 
+    console.log('Submitting final data:', finalData);
     onSubmit(finalData as CreateWidgetRequest);
+  };
+
+  const handleFormError = (errors: any) => {
+    console.log('Form validation errors:', errors);
   };
 
   const formContent = (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit, handleFormError)} className="space-y-6">
             {/* Widget Type Selection */}
             <FormField
               control={form.control}
@@ -338,49 +357,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                   </FormItem>
                 )}
               />
-            )}
-
-            {widgetType === 'outbound_web' && (
-              <>
-                <FormField<WidgetFormData>
-                  control={form.control}
-                  name="agent_persona"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Agent Persona</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Sarah from Acme Corp" {...field} value={field.value || ''} />
-                      </FormControl>
-                      <FormDescription>
-                        Who is calling? This will be displayed to the user.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField<WidgetFormData>
-                  control={form.control}
-                  name="opening_message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Opening Message</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Hi! This is Sarah calling about your recent inquiry..."
-                          rows={3}
-                          {...field}
-                          value={field.value || ''}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        The message your agent will start with when the call begins.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
             )}
 
             {/* Button Text */}

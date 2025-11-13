@@ -24,8 +24,6 @@ CREATE TABLE widgets (
 
   -- Optional fields for different widget types
   display_text TEXT, -- Custom display text for widget
-  agent_persona TEXT, -- Agent persona for outbound_web widgets
-  opening_message TEXT, -- Opening message for outbound calls
   inbound_phone_number TEXT, -- Phone number for inbound_phone widgets (auto-populated by system)
   outbound_phone_number TEXT, -- From phone number for outbound_phone widgets
 
@@ -58,12 +56,6 @@ ADD CONSTRAINT check_button_text_length CHECK (button_text IS NULL OR char_lengt
 
 ALTER TABLE widgets
 ADD CONSTRAINT check_access_code_length CHECK (access_code IS NULL OR (char_length(access_code) >= 4 AND char_length(access_code) <= 50));
-
-ALTER TABLE widgets
-ADD CONSTRAINT check_agent_persona_length CHECK (agent_persona IS NULL OR char_length(agent_persona) <= 100);
-
-ALTER TABLE widgets
-ADD CONSTRAINT check_opening_message_length CHECK (opening_message IS NULL OR char_length(opening_message) <= 500);
 
 ALTER TABLE widgets
 ADD CONSTRAINT check_phone_number_format CHECK (
@@ -129,11 +121,11 @@ GRANT USAGE ON SCHEMA public TO authenticated;
 --
 -- outbound_phone: System calls user's phone number
 --   Required: retell_api_key, agent_id, allowed_domain, outbound_phone_number
---   Optional: button_text, display_text, opening_message, access_code
+--   Optional: button_text, display_text, access_code
 --
 -- outbound_web: Simulates incoming call in browser
 --   Required: retell_api_key, agent_id, allowed_domain
---   Optional: button_text, display_text, agent_persona, opening_message, access_code
+--   Optional: button_text, display_text, access_code
 --
 -- ============================================================
 -- SECURITY & USAGE FEATURES

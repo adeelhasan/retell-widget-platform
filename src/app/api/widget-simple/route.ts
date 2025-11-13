@@ -529,14 +529,6 @@ export async function GET() {
     }
     
     createOutboundWebWidget(container) {
-      // Show agent persona if available
-      if (this.widgetConfig.agent_persona) {
-        const persona = document.createElement('div');
-        persona.className = 'retell-agent-persona';
-        persona.textContent = \`Incoming call from \${this.widgetConfig.agent_persona}\`;
-        container.appendChild(persona);
-      }
-      
       const button = document.createElement('button');
       button.className = 'retell-embed-button';
       button.innerHTML = \`
@@ -784,9 +776,7 @@ export async function GET() {
             widget_id: this.widgetId,
             metadata: {
               ...this.getMetadata(),
-              call_type: 'outbound_web',
-              agent_persona: this.widgetConfig.agent_persona,
-              opening_message: this.widgetConfig.opening_message
+              call_type: 'outbound_web'
             },
             ...(accessCode && { access_code: accessCode })
           })
@@ -1181,9 +1171,7 @@ export async function GET() {
       iframe.allow = 'microphone';
       
       const title = document.createElement('h3');
-      title.textContent = this.widgetConfig.agent_persona ? 
-        \`Incoming call from \${this.widgetConfig.agent_persona}\` : 
-        'Incoming Voice Call';
+      title.textContent = 'Incoming Voice Call';
       title.style.cssText = \`
         margin: 0 0 15px 0;
         color: #333;

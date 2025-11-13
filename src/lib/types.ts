@@ -18,8 +18,6 @@ export interface Widget {
   require_access_code: boolean;
   widget_type: WidgetType;
   display_text?: string;
-  agent_persona?: string;
-  opening_message?: string;
   inbound_phone_number?: string;
   outbound_phone_number?: string;
   created_at: string;
@@ -51,8 +49,6 @@ export interface CreateWidgetRequest {
   require_access_code?: boolean;
   widget_type?: WidgetType;
   display_text?: string;
-  agent_persona?: string;
-  opening_message?: string;
   outbound_phone_number?: string;
 }
 
@@ -69,8 +65,6 @@ export interface UpdateWidgetRequest {
   require_access_code?: boolean;
   widget_type?: WidgetType;
   display_text?: string;
-  agent_persona?: string;
-  opening_message?: string;
   outbound_phone_number?: string;
 }
 

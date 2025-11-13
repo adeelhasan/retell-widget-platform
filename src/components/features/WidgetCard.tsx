@@ -156,11 +156,6 @@ export function WidgetCard({ widget, onDelete, onEdit, onCopyEmbed }: WidgetCard
             </p>
           )}
 
-          {/* Show agent persona for outbound_web widgets */}
-          {widget.widget_type === 'outbound_web' && widget.agent_persona && (
-            <p><span className="font-medium">Agent Persona:</span> {widget.agent_persona}</p>
-          )}
-
           {widget.rate_limit_calls_per_hour && (
             <p><span className="font-medium">Rate Limit:</span> {widget.rate_limit_calls_per_hour}/hour</p>
           )}
