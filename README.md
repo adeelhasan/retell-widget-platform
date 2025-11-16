@@ -649,7 +649,8 @@ export const GET = withAuthAsync(getWidget, { validateUUID: 'id' });
 
 - `src/app/dashboard/` - Widget management dashboard
 - `src/app/api/` - REST API endpoints
-- `src/app/api/widget-simple/` - Embeddable widget script endpoint
+- `src/app/api/widget-simple/` - Embeddable widget script endpoint (primary)
+- `src/app/api/widget-bundle/` - Legacy endpoint (redirects to widget-simple)
 - `public/widget-example.html` - Complete integration example
 - `database-setup.sql` - **Complete database schema with all widget types** 📊
 - `docs/AUTHENTICATION.md` - **Authentication best practices guide** 🔑
