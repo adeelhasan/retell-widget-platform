@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
     async loadDependencies() {
       // Load dependencies via script tags as fallback
       return Promise.all([
-        this.loadScript('https://unpkg.com/eventemitter3@5.0.1/umd/eventemitter3.min.js', 'EventEmitter'),
+        this.loadScript('https://unpkg.com/eventemitter3@5.0.1/dist/eventemitter3.umd.min.js', 'EventEmitter'),
         this.loadScript('https://unpkg.com/livekit-client@2.5.1/dist/livekit-client.umd.js', 'LiveKit')
       ]);
     }
