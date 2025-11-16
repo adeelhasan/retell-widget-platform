@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * DEPRECATED: This endpoint is deprecated in favor of /api/widget-simple
+ * Redirects to widget-simple for backwards compatibility
+ */
 export async function GET(request: NextRequest) {
+  // Redirect to widget-simple
+  const url = new URL(request.url);
+  const redirectUrl = new URL('/api/widget-simple', url.origin);
+
+  // Preserve any query parameters
+  url.searchParams.forEach((value, key) => {
+    redirectUrl.searchParams.set(key, value);
+  });
+
+  return NextResponse.redirect(redirectUrl, 301); // Permanent redirect
+}
+
+// Keep old implementation below for reference (not used)
+export async function GET_DEPRECATED(request: NextRequest) {
   const widgetScript = `
 (function() {
   'use strict';
@@ -134,6 +152,22 @@ export async function GET(request: NextRequest) {
     }
     
     getBaseUrl() {
+      // Try to detect the API URL from the script tag that loaded this widget
+      const scripts = document.querySelectorAll('script[data-widget-id]');
+      for (const script of scripts) {
+        if (script.getAttribute('data-widget-id') === this.widgetId) {
+          const src = script.getAttribute('src');
+          if (src) {
+            try {
+              const url = new URL(src);
+              return url.origin;
+            } catch (e) {
+              // If parsing fails, continue
+            }
+          }
+        }
+      }
+      // Fallback to window origin (will fail for cross-domain embeds)
       return window.location.origin;
     }
     
@@ -379,32 +413,34 @@ export async function GET(request: NextRequest) {
   
   function initializeWidgets() {
     injectStyles();
-    
+
     // Find all script tags with data-widget-id
     const scripts = document.querySelectorAll('script[data-widget-id]');
-    
+
     scripts.forEach(script => {
       const widgetId = script.getAttribute('data-widget-id');
       const buttonText = script.getAttribute('data-button-text');
       const theme = script.getAttribute('data-theme');
       const customClass = script.getAttribute('data-class');
-      
+      const apiUrl = script.getAttribute('data-api-url');
+
       if (widgetId && !script.dataset.initialized) {
         script.dataset.initialized = 'true';
-        
+
         const container = document.createElement('div');
         if (customClass) {
           container.className = customClass;
         }
-        
+
         script.parentNode.insertBefore(container, script.nextSibling);
-        
+
         const widget = new RetellEmbedWidget(container, {
           widgetId,
           buttonText,
-          theme
+          theme,
+          baseUrl: apiUrl
         });
-        
+
         window.RetellWidgetLoader.widgets.push(widget);
       }
     });

@@ -118,9 +118,9 @@ export function generateEmbedCode(widgetId: string, buttonText?: string, metadat
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (
     typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
   );
-  
-  let embedCode = `<script 
-  src="${baseUrl}/api/widget-bundle" 
+
+  let embedCode = `<script
+  src="${baseUrl}/api/widget-simple"
   data-widget-id="${widgetId}"`;
   
   if (buttonText && buttonText !== 'Start Voice Demo') {
