@@ -53,10 +53,10 @@ export async function POST(request: NextRequest) {
       final: formattedPhone
     });
 
-    // Get widget configuration including default metadata
+    // Get widget configuration
     const { data: widget, error } = await supabaseAdmin
       .from('widgets')
-      .select('*, default_agent_name, default_property_type, default_lead_source, default_contact_email, default_notes')
+      .select('*')
       .eq('id', widget_id)
       .single();
 
@@ -136,15 +136,9 @@ export async function POST(request: NextRequest) {
       callType: 'outbound_phone'
     });
 
-    // Merge metadata: Page-level data takes precedence over widget defaults
+    // Merge metadata with system metadata
     const mergedMetadata = {
-      // Start with widget defaults
-      agent_name: widget.default_agent_name,
-      property_type: widget.default_property_type,
-      lead_source: widget.default_lead_source,
-      contact_email: widget.default_contact_email,
-      notes: widget.default_notes,
-      // Override with page-level metadata if provided
+      // Page-level metadata
       ...(metadata || {}),
       // Always include system metadata
       widget_id,

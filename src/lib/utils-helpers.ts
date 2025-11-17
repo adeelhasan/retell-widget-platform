@@ -113,7 +113,7 @@ export function validateMetadata(metadata: unknown): boolean {
   }
 }
 
-export function generateEmbedCode(widgetId: string, buttonText?: string, metadata?: Record<string, unknown>): string {
+export function generateEmbedCode(widgetId: string, buttonText?: string): string {
   // Use the environment variable or fallback to localhost for development
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (
     typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
@@ -122,16 +122,12 @@ export function generateEmbedCode(widgetId: string, buttonText?: string, metadat
   let embedCode = `<script
   src="${baseUrl}/api/widget-simple"
   data-widget-id="${widgetId}"`;
-  
+
   if (buttonText && buttonText !== 'Start Voice Demo') {
     embedCode += `\n  data-button-text="${buttonText}"`;
   }
-  
-  if (metadata && Object.keys(metadata).length > 0) {
-    embedCode += `\n  data-metadata='${JSON.stringify(metadata)}'`;
-  }
-  
+
   embedCode += '\n></script>';
-  
+
   return embedCode;
 }

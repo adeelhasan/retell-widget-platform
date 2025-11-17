@@ -1265,32 +1265,26 @@ export async function GET() {
         user_agent: navigator.userAgent,
         widget_version: '4.0.0-multi-type'
       };
-      
-      // Add widget default metadata if available
-      if (this.widgetConfig && this.widgetConfig.default_metadata) {
-        console.log('📋 Using widget default metadata:', this.widgetConfig.default_metadata);
-        Object.assign(metadata, this.widgetConfig.default_metadata);
-      }
-      
-      // Find the metadata form for this specific widget (page-level overrides)
+
+      // Find the metadata form for this specific widget
       const metadataForm = document.querySelector(\`form.retell-metadata[data-widget-id="\${this.widgetId}"]\`);
-      
+
       if (metadataForm) {
-        console.log('📝 Found metadata form for widget, applying page-level overrides:', this.widgetId);
-        
-        // Collect all hidden inputs from this widget's form (higher precedence)
+        console.log('📝 Found metadata form for widget:', this.widgetId);
+
+        // Collect all hidden inputs from this widget's form
         const hiddenInputs = metadataForm.querySelectorAll('input[type="hidden"]');
         hiddenInputs.forEach(input => {
           if (input.name && input.value) {
-            console.log(\`  📝 Page override: \${input.name} = \${input.value}\`);
+            console.log(\`  📝 Metadata: \${input.name} = \${input.value}\`);
             metadata[input.name] = input.value;
           }
         });
       } else {
         console.log('ℹ️ No metadata form found for widget:', this.widgetId);
       }
-      
-      console.log('📊 Final merged metadata for widget', this.widgetId + ':', metadata);
+
+      console.log('📊 Final metadata for widget', this.widgetId + ':', metadata);
       return metadata;
     }
   }

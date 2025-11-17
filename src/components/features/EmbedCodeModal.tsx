@@ -25,22 +25,12 @@ interface EmbedCodeModalProps {
 export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
   const [copied, setCopied] = useState(false);
   const [customButtonText, setCustomButtonText] = useState('');
-  const [customMetadata, setCustomMetadata] = useState('');
 
   if (!widget) return null;
 
-  const metadata = customMetadata ? (() => {
-    try {
-      return JSON.parse(customMetadata);
-    } catch {
-      return null;
-    }
-  })() : null;
-
   const embedCode = generateEmbedCode(
     widget.id,
-    customButtonText || widget.button_text,
-    metadata
+    customButtonText || widget.button_text
   );
 
   const handleCopy = async () => {
@@ -55,7 +45,6 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
 
   const handleClose = () => {
     setCustomButtonText('');
-    setCustomMetadata('');
     setCopied(false);
     onClose();
   };
@@ -126,21 +115,27 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
                   Override the button text for this specific embed code only
                 </p>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="metadata">Custom Metadata (JSON)</Label>
-                <Textarea
-                  id="metadata"
-                  placeholder='{"property_id": "123", "user_type": "premium"}'
-                  value={customMetadata}
-                  onChange={(e) => setCustomMetadata(e.target.value)}
-                  rows={3}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Add custom data to pass to your voice agent at runtime
-                </p>
-              </div>
             </div>
+          </div>
+
+          {/* Metadata Instructions */}
+          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h4 className="text-sm font-medium mb-2 text-blue-900 dark:text-blue-100">Pass Dynamic Data to Your Agent</h4>
+            <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+              To send context from your webpage to the voice agent (customer name, product details, etc.), add a metadata form:
+            </p>
+            <div className="bg-white dark:bg-gray-900 p-3 rounded border border-blue-200 dark:border-blue-700">
+              <pre className="text-xs font-mono text-gray-800 dark:text-gray-200 overflow-x-auto">
+{`<form class="retell-metadata" data-widget-id="${widget.id}">
+  <input type="hidden" name="customer_name" value="">
+  <input type="hidden" name="product_id" value="">
+  <input type="hidden" name="lead_source" value="Contact Page">
+</form>`}
+              </pre>
+            </div>
+            <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+              Your page can populate these values dynamically before the call starts. Use the field names in your agent prompt as {`{{customer_name}}`}, {`{{product_id}}`}, etc.
+            </p>
           </div>
 
           {/* Usage Instructions */}
@@ -149,8 +144,8 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
             <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Copy the embed code above</li>
               <li>Paste it into your website&apos;s HTML where you want the widget</li>
+              <li>Optionally add a metadata form to pass context to your agent</li>
               <li>The widget will automatically initialize when the page loads</li>
-              <li>Visitors can click the button to start a voice conversation</li>
             </ol>
           </div>
         </div>
