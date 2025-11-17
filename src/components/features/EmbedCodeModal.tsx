@@ -51,7 +51,7 @@ export function EmbedCodeModal({ widget, open, onClose }: EmbedCodeModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl">
+      <DialogContent className="max-w-[90vw] sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle>Embed Code for &quot;{widget.name}&quot;</DialogTitle>
           <DialogDescription>
