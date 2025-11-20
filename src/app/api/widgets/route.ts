@@ -102,6 +102,8 @@ export async function POST(request: NextRequest) {
       rate_limit_calls_per_hour,
       access_code,
       require_access_code,
+      contact_form_enabled,
+      collector_email,
       widget_type,
       display_text,
       outbound_phone_number
@@ -158,6 +160,8 @@ export async function POST(request: NextRequest) {
         rate_limit_calls_per_hour,
         access_code: access_code || null,
         require_access_code: require_access_code || false,
+        contact_form_enabled: contact_form_enabled || false,
+        collector_email: collector_email || null,
         widget_type: widget_type || 'inbound_web',
         display_text,
         outbound_phone_number

@@ -21,6 +21,8 @@ CREATE TABLE widgets (
   daily_minutes_enabled BOOLEAN DEFAULT false, -- Whether daily minutes limit is enforced
   access_code TEXT, -- Optional access code for widget protection
   require_access_code BOOLEAN DEFAULT false, -- Whether access code is required
+  contact_form_enabled BOOLEAN DEFAULT false NOT NULL, -- When enabled, shows contact form before voice call
+  collector_email TEXT, -- Email address where contact form submissions will be sent
 
   -- Optional fields for different widget types
   display_text TEXT, -- Custom display text for widget
@@ -66,6 +68,12 @@ ADD CONSTRAINT check_phone_number_format CHECK (
 ALTER TABLE widgets
 ADD CONSTRAINT check_daily_minutes_limit CHECK (daily_minutes_limit IS NULL OR daily_minutes_limit > 0);
 
+ALTER TABLE widgets
+ADD CONSTRAINT check_collector_email_format CHECK (
+  collector_email IS NULL OR
+  collector_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'
+);
+
 -- Grant permissions to authenticated users
 GRANT ALL ON widgets TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
@@ -104,6 +112,49 @@ CREATE INDEX idx_call_logs_pending ON call_logs(started_at) WHERE duration_secon
 
 -- Grant permissions
 GRANT SELECT ON call_logs TO authenticated;
+GRANT USAGE ON SCHEMA public TO authenticated;
+
+-- ============================================================
+-- CONTACT FORM SUBMISSIONS TABLE
+-- ============================================================
+
+-- Create contact_form_submissions table
+CREATE TABLE contact_form_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  widget_id UUID REFERENCES widgets(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  company TEXT NOT NULL,
+  email TEXT NOT NULL,
+  submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- Enable RLS on contact_form_submissions
+ALTER TABLE contact_form_submissions ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policy: Users can view their own form submissions
+CREATE POLICY "Users can view own contact form submissions" ON contact_form_submissions
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Create indexes for performance
+CREATE INDEX idx_contact_form_submissions_widget_id ON contact_form_submissions(widget_id);
+CREATE INDEX idx_contact_form_submissions_user_id ON contact_form_submissions(user_id);
+CREATE INDEX idx_contact_form_submissions_submitted_at ON contact_form_submissions(submitted_at DESC);
+
+-- Add constraints for data validation
+ALTER TABLE contact_form_submissions
+ADD CONSTRAINT check_submission_name_length CHECK (char_length(name) > 0 AND char_length(name) <= 100);
+
+ALTER TABLE contact_form_submissions
+ADD CONSTRAINT check_submission_company_length CHECK (char_length(company) > 0 AND char_length(company) <= 100);
+
+ALTER TABLE contact_form_submissions
+ADD CONSTRAINT check_submission_email_format
+CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$');
+
+-- Grant permissions to authenticated users
+GRANT SELECT ON contact_form_submissions TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
 
 -- ============================================================

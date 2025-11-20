@@ -227,8 +227,124 @@ export async function GET() {
         transform: translateY(0);
       }
     }
+
+    /* Contact Form Modal Styles */
+    .retell-contact-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: retell-fade-in 0.2s ease;
+    }
+
+    .retell-contact-modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: retell-slide-up 0.3s ease;
+    }
+
+    .retell-contact-modal h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .retell-contact-modal p {
+      margin: 0 0 20px 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .retell-contact-form-field {
+      margin-bottom: 16px;
+    }
+
+    .retell-contact-form-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .retell-contact-modal input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .retell-contact-modal input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .retell-contact-error {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .retell-contact-error.visible {
+      display: block;
+    }
+
+    .retell-contact-modal-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .retell-contact-modal button {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .retell-contact-modal button.cancel {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .retell-contact-modal button.cancel:hover {
+      background: #e5e7eb;
+    }
+
+    .retell-contact-modal button.submit {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .retell-contact-modal button.submit:hover {
+      background: #2563eb;
+    }
+
+    .retell-contact-modal button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   \`;
-  
+
   function injectStyles() {
     if (!document.getElementById('retell-embed-styles')) {
       const style = document.createElement('style');
@@ -374,6 +490,206 @@ export async function GET() {
           if (e.target === overlay) {
             cleanup();
             reject(new Error('Access code entry cancelled'));
+          }
+        });
+      });
+    }
+
+    promptForContactInfo() {
+      return new Promise((resolve, reject) => {
+        // Check sessionStorage first
+        const sessionKey = \`retell_contact_info_\${this.widgetId}\`;
+        const storedInfo = sessionStorage.getItem(sessionKey);
+        if (storedInfo) {
+          try {
+            resolve(JSON.parse(storedInfo));
+            return;
+          } catch (e) {
+            // Invalid stored data, continue to prompt
+          }
+        }
+
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'retell-contact-modal-overlay';
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'retell-contact-modal';
+
+        modal.innerHTML = \`
+          <h3>Contact Information</h3>
+          <p>Please provide your information to get started</p>
+
+          <div class="retell-contact-form-field">
+            <label for="retell-contact-name">Name *</label>
+            <input
+              type="text"
+              id="retell-contact-name"
+              placeholder="John Doe"
+              autocomplete="name"
+              required
+            />
+            <div class="retell-contact-error" id="retell-name-error"></div>
+          </div>
+
+          <div class="retell-contact-form-field">
+            <label for="retell-contact-company">Company *</label>
+            <input
+              type="text"
+              id="retell-contact-company"
+              placeholder="Acme Corporation"
+              autocomplete="organization"
+              required
+            />
+            <div class="retell-contact-error" id="retell-company-error"></div>
+          </div>
+
+          <div class="retell-contact-form-field">
+            <label for="retell-contact-email">Email *</label>
+            <input
+              type="email"
+              id="retell-contact-email"
+              placeholder="john@example.com"
+              autocomplete="email"
+              required
+            />
+            <div class="retell-contact-error" id="retell-email-error"></div>
+          </div>
+
+          <div class="retell-contact-modal-buttons">
+            <button class="cancel" type="button">Cancel</button>
+            <button class="submit" type="button">Continue</button>
+          </div>
+        \`;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const nameInput = modal.querySelector('#retell-contact-name');
+        const companyInput = modal.querySelector('#retell-contact-company');
+        const emailInput = modal.querySelector('#retell-contact-email');
+        const nameError = modal.querySelector('#retell-name-error');
+        const companyError = modal.querySelector('#retell-company-error');
+        const emailError = modal.querySelector('#retell-email-error');
+        const cancelBtn = modal.querySelector('.cancel');
+        const submitBtn = modal.querySelector('.submit');
+
+        // Focus first input
+        setTimeout(() => nameInput.focus(), 100);
+
+        // Handle cancel
+        const cleanup = () => {
+          document.body.removeChild(overlay);
+        };
+
+        cancelBtn.addEventListener('click', () => {
+          cleanup();
+          reject(new Error('Contact form cancelled'));
+        });
+
+        // Validation helpers
+        const clearErrors = () => {
+          nameError.classList.remove('visible');
+          companyError.classList.remove('visible');
+          emailError.classList.remove('visible');
+        };
+
+        const validateEmail = (email) => {
+          return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$/.test(email);
+        };
+
+        const validateForm = () => {
+          clearErrors();
+          let isValid = true;
+
+          const name = nameInput.value.trim();
+          const company = companyInput.value.trim();
+          const email = emailInput.value.trim();
+
+          if (!name) {
+            nameError.textContent = 'Name is required';
+            nameError.classList.add('visible');
+            isValid = false;
+          }
+
+          if (!company) {
+            companyError.textContent = 'Company is required';
+            companyError.classList.add('visible');
+            isValid = false;
+          }
+
+          if (!email) {
+            emailError.textContent = 'Email is required';
+            emailError.classList.add('visible');
+            isValid = false;
+          } else if (!validateEmail(email)) {
+            emailError.textContent = 'Please enter a valid email';
+            emailError.classList.add('visible');
+            isValid = false;
+          }
+
+          return isValid ? { name, company, email } : null;
+        };
+
+        // Handle submit
+        const submitForm = async () => {
+          const contactInfo = validateForm();
+          if (!contactInfo) {
+            return;
+          }
+
+          // Disable button while submitting
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting...';
+
+          try {
+            // Submit to backend API
+            const response = await fetch(\`\${this.baseUrl}/api/widgets/\${this.widgetId}/contact-form\`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Origin': window.location.origin
+              },
+              body: JSON.stringify(contactInfo)
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ error: 'Failed to submit form' }));
+              throw new Error(errorData.error || 'Failed to submit contact form');
+            }
+
+            // Store in sessionStorage
+            sessionStorage.setItem(sessionKey, JSON.stringify(contactInfo));
+
+            cleanup();
+            resolve(contactInfo);
+          } catch (error) {
+            console.error('Contact form submission error:', error);
+            emailError.textContent = error.message || 'Failed to submit. Please try again.';
+            emailError.classList.add('visible');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Continue';
+          }
+        };
+
+        submitBtn.addEventListener('click', submitForm);
+
+        // Handle Enter key on any input
+        [nameInput, companyInput, emailInput].forEach(input => {
+          input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              submitForm();
+            }
+          });
+        });
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            cleanup();
+            reject(new Error('Contact form cancelled'));
           }
         });
       });
@@ -635,6 +951,18 @@ export async function GET() {
     
     async startInboundWebCall() {
       try {
+        // Check if contact form is required
+        if (this.widgetConfig?.contact_form_enabled) {
+          try {
+            await this.promptForContactInfo();
+            console.log('✅ Contact form submitted successfully');
+          } catch (error) {
+            console.log('Contact form cancelled');
+            this.setState('idle');
+            return;
+          }
+        }
+
         // Check if access code is required
         let accessCode = null;
         if (this.widgetConfig?.require_access_code) {

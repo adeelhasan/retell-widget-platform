@@ -66,6 +66,12 @@ const widgetFormSchema = z.object({
     .max(50, "Access code must be 50 characters or less")
     .optional()
     .or(z.literal('')),
+  contact_form_enabled: z.boolean().default(false),
+  collector_email: z.string()
+    .trim()
+    .email("Must be a valid email address")
+    .optional()
+    .or(z.literal('')),
   display_text: z.string().trim().optional(),
   outbound_phone_number: z.string()
     .trim()
@@ -95,6 +101,15 @@ const widgetFormSchema = z.object({
 }, {
   message: "Access code is required when protection is enabled",
   path: ["access_code"],
+}).refine((data) => {
+  // If contact_form_enabled is true, collector_email must be provided
+  if (data.contact_form_enabled && (!data.collector_email || data.collector_email === '')) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Collector email is required when contact form is enabled",
+  path: ["collector_email"],
 });
 
 type WidgetFormData = z.infer<typeof widgetFormSchema>;
@@ -122,6 +137,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
       daily_minutes_enabled: widget?.daily_minutes_enabled || false,
       require_access_code: widget?.require_access_code || false,
       access_code: widget?.access_code || '',
+      contact_form_enabled: widget?.contact_form_enabled || false,
+      collector_email: widget?.collector_email || '',
       display_text: widget?.display_text || '',
       outbound_phone_number: widget?.outbound_phone_number || '',
     },
@@ -162,6 +179,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
       // Convert empty strings to undefined for all optional string fields (database constraints)
       button_text: emptyToUndefined(data.button_text),
       access_code: emptyToUndefined(data.access_code),
+      collector_email: emptyToUndefined(data.collector_email),
       display_text: emptyToUndefined(data.display_text),
       outbound_phone_number: emptyToUndefined(data.outbound_phone_number),
     };
@@ -498,6 +516,53 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading, mode = 'create
                       </FormControl>
                       <FormDescription>
                         4-50 characters. Share this code with users who should access the widget.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            {/* Contact Form Feature */}
+            <div className="space-y-4 rounded-lg border p-4">
+              <FormField
+                control={form.control}
+                name="contact_form_enabled"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>Pre-Call Contact Form</FormLabel>
+                      <FormDescription>
+                        Collect name, company, and email before starting the call
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch('contact_form_enabled') && (
+                <FormField
+                  control={form.control}
+                  name="collector_email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Collector Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="leads@example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Form submissions will be sent to this email address
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

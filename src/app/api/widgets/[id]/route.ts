@@ -75,6 +75,8 @@ async function updateWidget(
     daily_minutes_enabled,
     access_code,
     require_access_code,
+    contact_form_enabled,
+    collector_email,
     widget_type,
     display_text,
     outbound_phone_number
@@ -125,6 +127,8 @@ async function updateWidget(
   if (daily_minutes_enabled !== undefined) updateData.daily_minutes_enabled = daily_minutes_enabled;
   if (access_code !== undefined) updateData.access_code = access_code;
   if (require_access_code !== undefined) updateData.require_access_code = require_access_code;
+  if (contact_form_enabled !== undefined) updateData.contact_form_enabled = contact_form_enabled;
+  if (collector_email !== undefined) updateData.collector_email = collector_email;
   if (widget_type !== undefined) updateData.widget_type = widget_type;
   if (display_text !== undefined) updateData.display_text = display_text;
   if (outbound_phone_number !== undefined) updateData.outbound_phone_number = outbound_phone_number;

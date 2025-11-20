@@ -16,6 +16,8 @@ export interface Widget {
   daily_minutes_enabled: boolean;
   access_code?: string | null;
   require_access_code: boolean;
+  contact_form_enabled: boolean;
+  collector_email?: string | null;
   widget_type: WidgetType;
   display_text?: string;
   inbound_phone_number?: string;
@@ -47,6 +49,8 @@ export interface CreateWidgetRequest {
   daily_minutes_enabled?: boolean;
   access_code?: string;
   require_access_code?: boolean;
+  contact_form_enabled?: boolean;
+  collector_email?: string;
   widget_type?: WidgetType;
   display_text?: string;
   outbound_phone_number?: string;
@@ -63,6 +67,8 @@ export interface UpdateWidgetRequest {
   daily_minutes_enabled?: boolean;
   access_code?: string;
   require_access_code?: boolean;
+  contact_form_enabled?: boolean;
+  collector_email?: string;
   widget_type?: WidgetType;
   display_text?: string;
   outbound_phone_number?: string;
@@ -92,4 +98,26 @@ export interface PhoneVerification {
   verified_at?: string;
   expires_at: string;
   created_at: string;
+}
+
+export interface ContactFormSubmission {
+  id: string;
+  widget_id: string;
+  user_id: string;
+  name: string;
+  company: string;
+  email: string;
+  submitted_at: string;
+  created_at: string;
+}
+
+export interface SubmitContactFormRequest {
+  name: string;
+  company: string;
+  email: string;
+}
+
+export interface SubmitContactFormResponse {
+  success: boolean;
+  message: string;
 }

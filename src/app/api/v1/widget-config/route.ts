@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const { data: widget, error } = await supabase
       .from('widgets')
-      .select('id, widget_type, button_text, display_text, allowed_domain, outbound_phone_number, require_access_code')
+      .select('id, widget_type, button_text, display_text, allowed_domain, outbound_phone_number, require_access_code, contact_form_enabled')
       .eq('id', widgetId)
       .single();
 
@@ -59,13 +59,15 @@ export async function GET(request: NextRequest) {
       button_text: string;
       display_text: string | null;
       require_access_code: boolean;
+      contact_form_enabled: boolean;
       outbound_phone_number?: string;
     } = {
       id: widget.id,
       widget_type: widget.widget_type,
       button_text: widget.button_text,
       display_text: widget.display_text,
-      require_access_code: widget.require_access_code || false
+      require_access_code: widget.require_access_code || false,
+      contact_form_enabled: widget.contact_form_enabled || false
     };
 
     // Include outbound phone number for outbound phone widgets
