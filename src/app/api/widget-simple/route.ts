@@ -509,7 +509,9 @@ export async function GET() {
         if (storedInfo) {
           try {
             console.log('✅ Using cached contact info from session storage');
-            resolve(JSON.parse(storedInfo));
+            const cachedData = JSON.parse(storedInfo);
+            // Return with flag indicating this was cached (not freshly submitted)
+            resolve({ ...cachedData, _cached: true });
             return;
           } catch (e) {
             console.log('⚠️ Invalid cached contact info, showing form');
@@ -957,10 +959,14 @@ export async function GET() {
       if (this.widgetConfig?.contact_form_enabled) {
         try {
           console.log('📋 [OUTBOUND_PHONE] Showing contact form...');
-          await this.promptForContactInfo();
+          const contactInfo = await this.promptForContactInfo();
           console.log('✅ [OUTBOUND_PHONE] Contact form submitted successfully');
-          this.showSuccess('Thanks for filling out the form!');
-          await this.delay(1500); // Show success message briefly
+
+          // Only show success message if form was actually filled out (not cached)
+          if (!contactInfo._cached) {
+            this.showSuccess('Thanks for filling out the form!');
+            await this.delay(1500); // Show success message briefly
+          }
         } catch (error) {
           console.log('❌ [OUTBOUND_PHONE] Contact form cancelled');
           this.setState('idle');
@@ -986,10 +992,14 @@ export async function GET() {
         if (this.widgetConfig?.contact_form_enabled) {
           try {
             console.log('📋 [INBOUND_WEB] Showing contact form...');
-            await this.promptForContactInfo();
+            const contactInfo = await this.promptForContactInfo();
             console.log('✅ [INBOUND_WEB] Contact form submitted successfully');
-            this.showSuccess('Thanks for filling out the form!');
-            await this.delay(1500); // Show success message briefly
+
+            // Only show success message if form was actually filled out (not cached)
+            if (!contactInfo._cached) {
+              this.showSuccess('Thanks for filling out the form!');
+              await this.delay(1500); // Show success message briefly
+            }
           } catch (error) {
             console.log('❌ [INBOUND_WEB] Contact form cancelled');
             this.setState('idle');
@@ -1089,10 +1099,14 @@ export async function GET() {
         if (this.widgetConfig?.contact_form_enabled) {
           try {
             console.log('📋 [OUTBOUND_WEB] Showing contact form...');
-            await this.promptForContactInfo();
+            const contactInfo = await this.promptForContactInfo();
             console.log('✅ [OUTBOUND_WEB] Contact form submitted successfully');
-            this.showSuccess('Thanks for filling out the form!');
-            await this.delay(1500); // Show success message briefly
+
+            // Only show success message if form was actually filled out (not cached)
+            if (!contactInfo._cached) {
+              this.showSuccess('Thanks for filling out the form!');
+              await this.delay(1500); // Show success message briefly
+            }
           } catch (error) {
             console.log('❌ [OUTBOUND_WEB] Contact form cancelled');
             this.setState('idle');
