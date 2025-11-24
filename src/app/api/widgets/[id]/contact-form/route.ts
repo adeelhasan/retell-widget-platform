@@ -81,6 +81,19 @@ async function sendContactFormEmail(
   // });
 }
 
+// OPTIONS /api/widgets/[id]/contact-form - Handle CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin',
+      'Access-Control-Max-Age': '86400', // 24 hours
+    },
+  });
+}
+
 // POST /api/widgets/[id]/contact-form - Submit contact form
 export async function POST(
   request: NextRequest,
@@ -90,11 +103,19 @@ export async function POST(
     const { id: widgetId } = await params;
 
     // Get origin for domain verification
-    const origin = request.headers.get('origin');
+    const origin = request.headers.get('origin') || '';
+
+    // CORS headers for response
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin',
+    };
+
     if (!origin) {
       return NextResponse.json(
         { error: 'Missing origin header' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -107,7 +128,7 @@ export async function POST(
     if (!checkContactFormRateLimit(ipAddress)) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
-        { status: 429 }
+        { status: 429, headers: corsHeaders }
       );
     }
 
@@ -119,21 +140,21 @@ export async function POST(
     if (!name || name.trim().length === 0) {
       return NextResponse.json(
         { error: 'Name is required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     if (!company || company.trim().length === 0) {
       return NextResponse.json(
         { error: 'Company is required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     if (!email || !isValidEmail(email.trim())) {
       return NextResponse.json(
         { error: 'Valid email is required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -149,7 +170,7 @@ export async function POST(
     if (!uuidRegex.test(widgetId)) {
       return NextResponse.json(
         { error: 'Invalid widget ID format' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -163,7 +184,7 @@ export async function POST(
     if (widgetError || !widget) {
       return NextResponse.json(
         { error: 'Widget not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -171,7 +192,7 @@ export async function POST(
     if (!isAllowedDomains(origin, widget.allowed_domain)) {
       return NextResponse.json(
         { error: 'Domain not authorized for this widget' },
-        { status: 403 }
+        { status: 403, headers: corsHeaders }
       );
     }
 
@@ -179,17 +200,14 @@ export async function POST(
     if (!widget.contact_form_enabled) {
       return NextResponse.json(
         { error: 'Contact form not enabled for this widget' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
-    // Verify collector email is configured
+    // Verify collector email is configured (optional - allow submission without email)
     if (!widget.collector_email) {
-      console.error('Contact form enabled but no collector email configured for widget:', widgetId);
-      return NextResponse.json(
-        { error: 'Contact form is not properly configured' },
-        { status: 500 }
-      );
+      console.log('ℹ️ Contact form enabled but no collector email configured for widget:', widgetId);
+      // Don't fail - just log and continue to save the submission
     }
 
     // Store submission in database
@@ -207,33 +225,45 @@ export async function POST(
       console.error('Failed to store contact form submission:', insertError);
       return NextResponse.json(
         { error: 'Failed to process submission' },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     }
 
-    // Send email notification
-    try {
-      await sendContactFormEmail(
-        widget.collector_email,
-        cleanData,
-        widget.name
-      );
-    } catch (emailError) {
-      console.error('Failed to send email notification:', emailError);
-      // Don't fail the request if email sending fails
-      // The submission is already stored in the database
+    // Send email notification (only if collector_email is configured)
+    if (widget.collector_email) {
+      try {
+        await sendContactFormEmail(
+          widget.collector_email,
+          cleanData,
+          widget.name
+        );
+      } catch (emailError) {
+        console.error('Failed to send email notification:', emailError);
+        // Don't fail the request if email sending fails
+        // The submission is already stored in the database
+      }
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Contact form submitted successfully'
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Contact form submitted successfully'
+      },
+      { status: 200, headers: corsHeaders }
+    );
 
   } catch (error) {
     console.error('Contact form submission error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Origin',
+        }
+      }
     );
   }
 }
