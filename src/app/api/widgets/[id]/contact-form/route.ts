@@ -58,7 +58,16 @@ async function sendContactFormEmail(
     throw new Error('Email service not configured');
   }
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Widget Platform <notifications@yourdomain.com>';
+  // Use widget name as display name, fallback to env var or default
+  const baseFromEmail = process.env.RESEND_FROM_EMAIL || 'notifications@yourdomain.com';
+
+  // If RESEND_FROM_EMAIL already has a display name format, extract just the email
+  const emailMatch = baseFromEmail.match(/<(.+)>/);
+  const emailAddress = emailMatch ? emailMatch[1] : baseFromEmail;
+
+  // Create from address with widget name as display name
+  const fromEmail = `${widgetName} <${emailAddress}>`;
+
   const timestamp = new Date().toLocaleString('en-US', {
     dateStyle: 'long',
     timeStyle: 'short'
