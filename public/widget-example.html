@@ -4,6 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Widget Example - Retell AI Voice Integration</title>
+
+    <!-- EXAMPLE: Custom Widget Styling via CSS Variables -->
+    <!-- Uncomment this section to customize the widget appearance -->
+    <!--
+    <style>
+      :root {
+        /* Button Styling */
+        --retell-widget-button-bg: #10b981;
+        --retell-widget-button-color: white;
+        --retell-widget-button-radius: 20px;
+        --retell-widget-button-padding: 14px 28px;
+        --retell-widget-button-font-size: 16px;
+
+        /* Modal Styling */
+        --retell-widget-modal-bg: #f9fafb;
+        --retell-widget-z-index: 99999;
+
+        /* Custom Font */
+        --retell-widget-font-family: 'Georgia', serif;
+      }
+    </style>
+    -->
+
     <style>
         * {
             margin: 0;
@@ -213,26 +236,77 @@
 
         <div class="widget-section">
             <div class="widget-label">Your Widget</div>
-            
-            <!-- 
+
+            <!--
             ============================================================
-            REPLACE THIS SECTION WITH YOUR EMBED CODE
+            WIDGET EMBED CODE - THREE WAYS TO CUSTOMIZE
+            ============================================================
+
+            OPTION 1: Basic Embed (Minimal)
+            ────────────────────────────────────────────────────────────
+            <script
+              src="https://retell-widget-platform.vercel.app/api/widget-simple"
+              data-widget-id="your-widget-id-here">
+            </script>
+
+
+            OPTION 2: Data Attributes (Simple Customization)
+            ────────────────────────────────────────────────────────────
+            <script
+              src="https://retell-widget-platform.vercel.app/api/widget-simple"
+              data-widget-id="your-widget-id-here"
+              data-button-text="Talk to Us"
+              data-button-bg="#10b981"
+              data-button-color="white"
+              data-button-radius="20px"
+              data-modal-z-index="99999">
+            </script>
+
+            Available data attributes:
+            - data-button-bg: Button background color/gradient
+            - data-button-color: Button text color
+            - data-button-radius: Button border radius
+            - data-button-padding: Button padding
+            - data-button-font-size: Button font size
+            - data-modal-z-index: Modal stacking order
+            - data-font-family: Custom font family
+
+
+            OPTION 3: CSS Variables (Advanced Customization)
+            ────────────────────────────────────────────────────────────
+            Add this to your page's <style> section:
+
+            <style>
+              :root {
+                --retell-widget-button-bg: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                --retell-widget-button-color: white;
+                --retell-widget-button-radius: 20px;
+                --retell-widget-button-padding: 14px 28px;
+                --retell-widget-button-font-size: 16px;
+                --retell-widget-modal-bg: white;
+                --retell-widget-z-index: 99999;
+              }
+            </style>
+
+            See full list of CSS variables at:
+            https://docs.retellai.com/widget-styling (coming soon)
+
             ============================================================
             -->
-            
-            <!-- EXAMPLE EMBED CODE - REPLACE WITH YOUR ACTUAL VALUES -->
-            <!-- Get your widget ID from the dashboard after creating a widget -->
-            <script 
-            src="https://retell-widget-platform.vercel.app/api/widget-simple"
-            data-widget-id="your-widget-id-here"
-            data-button-text="Start Voice Demo"
-          ></script>
 
-          <form class="retell-metadata" data-widget-id="your-widget-id-here">
-            <input type="hidden" name="agent_name" value="Demo Agent">
-            <input type="hidden" name="property_type" value="Example Property">
-            <input type="hidden" name="lead_source" value="Website Demo">
-        </form>
+            <!-- CURRENT EMBED CODE -->
+            <script
+              src="https://retell-widget-platform.vercel.app/api/widget-simple"
+              data-widget-id="your-widget-id-here"
+              data-button-text="Start Voice Demo">
+            </script>
+
+            <!-- Optional: Metadata for tracking -->
+            <form class="retell-metadata" data-widget-id="your-widget-id-here">
+              <input type="hidden" name="agent_name" value="Demo Agent">
+              <input type="hidden" name="property_type" value="Example Property">
+              <input type="hidden" name="lead_source" value="Website Demo">
+            </form>
         
             
             

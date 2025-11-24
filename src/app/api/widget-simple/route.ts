@@ -15,98 +15,211 @@ export async function GET() {
     widgets: []
   };
   
-  // Widget styling
+  // Widget styling with CSS custom properties
   const WIDGET_STYLES = \`
-    .retell-embed-widget {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* CSS Custom Properties - Users can override these */
+    :root {
+      /* Button - Core */
+      --retell-widget-button-bg: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+      --retell-widget-button-bg-hover: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+      --retell-widget-button-bg-connecting: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      --retell-widget-button-bg-connected: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --retell-widget-button-bg-error: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      --retell-widget-button-color: white;
+      --retell-widget-button-padding: 12px 24px;
+      --retell-widget-button-radius: 8px;
+      --retell-widget-button-font-size: 14px;
+      --retell-widget-button-font-weight: 600;
+      --retell-widget-button-min-width: 150px;
+      --retell-widget-button-gap: 8px;
+
+      /* Button - Shadows */
+      --retell-widget-button-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+      --retell-widget-button-shadow-hover: 0 4px 8px rgba(59, 130, 246, 0.4);
+
+      /* Button - Transform */
+      --retell-widget-button-transform-hover: translateY(-1px);
+
+      /* Typography */
+      --retell-widget-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+      /* Modal - Core */
+      --retell-widget-z-index: 10000;
+      --retell-widget-overlay-bg: rgba(0, 0, 0, 0.5);
+      --retell-widget-modal-bg: white;
+      --retell-widget-modal-radius: 12px;
+      --retell-widget-modal-padding: 24px;
+      --retell-widget-modal-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      --retell-widget-modal-max-width: 400px;
+
+      /* Modal - Typography */
+      --retell-widget-modal-title-size: 18px;
+      --retell-widget-modal-title-weight: 600;
+      --retell-widget-modal-title-color: #1f2937;
+      --retell-widget-modal-text-size: 14px;
+      --retell-widget-modal-text-color: #6b7280;
+
+      /* Form Inputs */
+      --retell-widget-input-padding: 10px 12px;
+      --retell-widget-input-border: 1px solid #d1d5db;
+      --retell-widget-input-radius: 6px;
+      --retell-widget-input-font-size: 14px;
+      --retell-widget-input-focus-border: #3b82f6;
+      --retell-widget-input-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+
+      /* Form Labels */
+      --retell-widget-label-size: 14px;
+      --retell-widget-label-weight: 500;
+      --retell-widget-label-color: #374151;
+
+      /* Buttons (Modal) */
+      --retell-widget-modal-button-padding: 8px 16px;
+      --retell-widget-modal-button-radius: 6px;
+      --retell-widget-modal-button-font-size: 14px;
+      --retell-widget-modal-button-font-weight: 500;
+      --retell-widget-modal-button-cancel-bg: #f3f4f6;
+      --retell-widget-modal-button-cancel-bg-hover: #e5e7eb;
+      --retell-widget-modal-button-cancel-color: #374151;
+      --retell-widget-modal-button-submit-bg: #3b82f6;
+      --retell-widget-modal-button-submit-bg-hover: #2563eb;
+      --retell-widget-modal-button-submit-color: white;
+
+      /* Error Messages */
+      --retell-widget-error-color: #ef4444;
+      --retell-widget-error-font-size: 13px;
+
+      /* Spinner */
+      --retell-widget-spinner-size: 16px;
+      --retell-widget-spinner-border: 2px solid rgba(255, 255, 255, 0.3);
+      --retell-widget-spinner-border-top: white;
+
+      /* Transitions */
+      --retell-widget-transition: all 0.2s ease;
+    }
+
+    /* CSS Reset for widget elements */
+    .rtl-w-widget,
+    .rtl-w-widget *,
+    .rtl-w-btn,
+    .rtl-w-btn *,
+    .rtl-w-access-modal-overlay,
+    .rtl-w-access-modal-overlay *,
+    .rtl-w-contact-modal-overlay,
+    .rtl-w-contact-modal-overlay * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .rtl-w-widget {
+      font-family: var(--retell-widget-font-family);
       display: inline-block;
       position: relative;
     }
-    
-    .retell-embed-button {
-      background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-      color: white;
+
+    .rtl-w-btn {
+      background: var(--retell-widget-button-bg);
+      color: var(--retell-widget-button-color);
       border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      padding: var(--retell-widget-button-padding);
+      border-radius: var(--retell-widget-button-radius);
+      font-size: var(--retell-widget-button-font-size);
+      font-weight: var(--retell-widget-button-font-weight);
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
-      min-width: 150px;
+      transition: var(--retell-widget-transition);
+      box-shadow: var(--retell-widget-button-shadow);
+      min-width: var(--retell-widget-button-min-width);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: var(--retell-widget-button-gap);
+      font-family: var(--retell-widget-font-family);
     }
-    
-    .retell-embed-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+
+    .rtl-w-btn:hover {
+      transform: var(--retell-widget-button-transform-hover);
+      box-shadow: var(--retell-widget-button-shadow-hover);
     }
-    
-    .retell-embed-button.connecting {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+
+    .rtl-w-btn.connecting {
+      background: var(--retell-widget-button-bg-connecting);
       cursor: wait;
     }
-    
-    .retell-embed-button.connected {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      animation: retell-pulse 2s infinite;
+
+    .rtl-w-btn.connected {
+      background: var(--retell-widget-button-bg-connected);
+      animation: rtl-w-pulse 2s infinite;
     }
-    
-    .retell-embed-button.error {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+
+    .rtl-w-btn.error {
+      background: var(--retell-widget-button-bg-error);
     }
-    
-    .retell-outbound-form {
+
+    .rtl-w-outbound-form {
       display: flex;
       flex-direction: column;
       gap: 10px;
       max-width: 300px;
     }
-    
-    .retell-phone-input {
+
+    .rtl-w-phone-input {
       padding: 8px 12px;
       border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
+      border-radius: var(--retell-widget-input-radius);
+      font-size: var(--retell-widget-input-font-size);
+      font-family: var(--retell-widget-font-family);
     }
-    
-    .retell-agent-persona {
+
+    .rtl-w-phone-caption {
+      font-size: 14px;
+      color: #64748b;
+      text-align: center;
+      font-family: var(--retell-widget-font-family);
+    }
+
+    .rtl-w-phone-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #475569;
+      font-family: var(--retell-widget-font-family);
+    }
+
+    .rtl-w-agent-persona {
       font-size: 12px;
       color: #666;
       margin-bottom: 8px;
       text-align: center;
       font-style: italic;
+      font-family: var(--retell-widget-font-family);
     }
-    
-    .retell-spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+
+    .rtl-w-spinner {
+      width: var(--retell-widget-spinner-size);
+      height: var(--retell-widget-spinner-size);
+      border: var(--retell-widget-spinner-border);
       border-radius: 50%;
-      border-top-color: white;
-      animation: retell-spin 1s linear infinite;
+      border-top-color: var(--retell-widget-spinner-border-top);
+      animation: rtl-w-spin 1s linear infinite;
     }
-    
-    @keyframes retell-spin {
+
+    @keyframes rtl-w-spin {
       to { transform: rotate(360deg); }
     }
-    
-    @keyframes retell-pulse {
-      0%, 100% { 
+
+    @keyframes rtl-w-pulse {
+      0%, 100% {
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         transform: translateY(-1px);
       }
-      50% { 
+      50% {
         box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
         transform: translateY(-2px);
       }
     }
-    
-    @keyframes retell-ring {
+
+    @keyframes rtl-w-ring {
       0%, 100% {
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         transform: translateY(-1px) scale(1);
@@ -118,106 +231,112 @@ export async function GET() {
     }
 
     /* Access Code Modal Styles */
-    .retell-access-modal-overlay {
+    .rtl-w-access-modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--retell-widget-overlay-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10000;
-      animation: retell-fade-in 0.2s ease;
+      z-index: var(--retell-widget-z-index);
+      animation: rtl-w-fade-in 0.2s ease;
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-access-modal {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      max-width: 400px;
+    .rtl-w-access-modal {
+      background: var(--retell-widget-modal-bg);
+      border-radius: var(--retell-widget-modal-radius);
+      padding: var(--retell-widget-modal-padding);
+      max-width: var(--retell-widget-modal-max-width);
       width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: retell-slide-up 0.3s ease;
+      box-shadow: var(--retell-widget-modal-shadow);
+      animation: rtl-w-slide-up 0.3s ease;
     }
 
-    .retell-access-modal h3 {
+    .rtl-w-access-modal h3 {
       margin: 0 0 8px 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #1f2937;
+      font-size: var(--retell-widget-modal-title-size);
+      font-weight: var(--retell-widget-modal-title-weight);
+      color: var(--retell-widget-modal-title-color);
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-access-modal p {
+    .rtl-w-access-modal p {
       margin: 0 0 16px 0;
-      font-size: 14px;
-      color: #6b7280;
+      font-size: var(--retell-widget-modal-text-size);
+      color: var(--retell-widget-modal-text-color);
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-access-modal input {
+    .rtl-w-access-modal input {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: var(--retell-widget-input-padding);
+      border: var(--retell-widget-input-border);
+      border-radius: var(--retell-widget-input-radius);
+      font-size: var(--retell-widget-input-font-size);
       margin-bottom: 16px;
       box-sizing: border-box;
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-access-modal input:focus {
+    .rtl-w-access-modal input:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--retell-widget-input-focus-border);
+      box-shadow: var(--retell-widget-input-focus-shadow);
     }
 
-    .retell-access-modal-buttons {
+    .rtl-w-access-modal-buttons {
       display: flex;
       gap: 8px;
       justify-content: flex-end;
     }
 
-    .retell-access-modal button {
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
+    .rtl-w-access-modal button {
+      padding: var(--retell-widget-modal-button-padding);
+      border-radius: var(--retell-widget-modal-button-radius);
+      font-size: var(--retell-widget-modal-button-font-size);
+      font-weight: var(--retell-widget-modal-button-font-weight);
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
+      transition: var(--retell-widget-transition);
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-access-modal button.cancel {
-      background: #f3f4f6;
-      color: #374151;
+    .rtl-w-access-modal button.cancel {
+      background: var(--retell-widget-modal-button-cancel-bg);
+      color: var(--retell-widget-modal-button-cancel-color);
     }
 
-    .retell-access-modal button.cancel:hover {
-      background: #e5e7eb;
+    .rtl-w-access-modal button.cancel:hover {
+      background: var(--retell-widget-modal-button-cancel-bg-hover);
     }
 
-    .retell-access-modal button.submit {
-      background: #3b82f6;
-      color: white;
+    .rtl-w-access-modal button.submit {
+      background: var(--retell-widget-modal-button-submit-bg);
+      color: var(--retell-widget-modal-button-submit-color);
     }
 
-    .retell-access-modal button.submit:hover {
-      background: #2563eb;
+    .rtl-w-access-modal button.submit:hover {
+      background: var(--retell-widget-modal-button-submit-bg-hover);
     }
 
-    .retell-access-error {
-      color: #ef4444;
-      font-size: 13px;
+    .rtl-w-access-error {
+      color: var(--retell-widget-error-color);
+      font-size: var(--retell-widget-error-font-size);
       margin-top: -12px;
       margin-bottom: 12px;
+      font-family: var(--retell-widget-font-family);
     }
 
-    @keyframes retell-fade-in {
+    @keyframes rtl-w-fade-in {
       from { opacity: 0; }
       to { opacity: 1; }
     }
 
-    @keyframes retell-slide-up {
+    @keyframes rtl-w-slide-up {
       from {
         opacity: 0;
         transform: translateY(20px);
@@ -229,126 +348,133 @@ export async function GET() {
     }
 
     /* Contact Form Modal Styles */
-    .retell-contact-modal-overlay {
+    .rtl-w-contact-modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--retell-widget-overlay-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10000;
-      animation: retell-fade-in 0.2s ease;
+      z-index: var(--retell-widget-z-index);
+      animation: rtl-w-fade-in 0.2s ease;
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-contact-modal {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
+    .rtl-w-contact-modal {
+      background: var(--retell-widget-modal-bg);
+      border-radius: var(--retell-widget-modal-radius);
+      padding: var(--retell-widget-modal-padding);
       max-width: 450px;
       width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: retell-slide-up 0.3s ease;
+      box-shadow: var(--retell-widget-modal-shadow);
+      animation: rtl-w-slide-up 0.3s ease;
     }
 
-    .retell-contact-modal h3 {
+    .rtl-w-contact-modal h3 {
       margin: 0 0 8px 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #1f2937;
+      font-size: var(--retell-widget-modal-title-size);
+      font-weight: var(--retell-widget-modal-title-weight);
+      color: var(--retell-widget-modal-title-color);
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-contact-modal p {
+    .rtl-w-contact-modal p {
       margin: 0 0 20px 0;
-      font-size: 14px;
-      color: #6b7280;
+      font-size: var(--retell-widget-modal-text-size);
+      color: var(--retell-widget-modal-text-color);
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-contact-form-field {
+    .rtl-w-contact-form-field {
       margin-bottom: 16px;
     }
 
-    .retell-contact-form-field label {
+    .rtl-w-contact-form-field label {
       display: block;
       margin-bottom: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #374151;
+      font-size: var(--retell-widget-label-size);
+      font-weight: var(--retell-widget-label-weight);
+      color: var(--retell-widget-label-color);
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-contact-modal input {
+    .rtl-w-contact-modal input {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: var(--retell-widget-input-padding);
+      border: var(--retell-widget-input-border);
+      border-radius: var(--retell-widget-input-radius);
+      font-size: var(--retell-widget-input-font-size);
       box-sizing: border-box;
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-contact-modal input:focus {
+    .rtl-w-contact-modal input:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--retell-widget-input-focus-border);
+      box-shadow: var(--retell-widget-input-focus-shadow);
     }
 
-    .retell-contact-error {
-      color: #ef4444;
-      font-size: 13px;
+    .rtl-w-contact-error {
+      color: var(--retell-widget-error-color);
+      font-size: var(--retell-widget-error-font-size);
       margin-top: 4px;
       display: none;
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-contact-error.visible {
+    .rtl-w-contact-error.visible {
       display: block;
     }
 
-    .retell-contact-modal-buttons {
+    .rtl-w-contact-modal-buttons {
       display: flex;
       gap: 8px;
       justify-content: flex-end;
       margin-top: 20px;
     }
 
-    .retell-contact-modal button {
+    .rtl-w-contact-modal button {
       padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
+      border-radius: var(--retell-widget-modal-button-radius);
+      font-size: var(--retell-widget-modal-button-font-size);
+      font-weight: var(--retell-widget-modal-button-font-weight);
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
+      transition: var(--retell-widget-transition);
+      font-family: var(--retell-widget-font-family);
     }
 
-    .retell-contact-modal button.cancel {
-      background: #f3f4f6;
-      color: #374151;
+    .rtl-w-contact-modal button.cancel {
+      background: var(--retell-widget-modal-button-cancel-bg);
+      color: var(--retell-widget-modal-button-cancel-color);
     }
 
-    .retell-contact-modal button.cancel:hover {
-      background: #e5e7eb;
+    .rtl-w-contact-modal button.cancel:hover {
+      background: var(--retell-widget-modal-button-cancel-bg-hover);
     }
 
-    .retell-contact-modal button.submit {
-      background: #3b82f6;
-      color: white;
+    .rtl-w-contact-modal button.submit {
+      background: var(--retell-widget-modal-button-submit-bg);
+      color: var(--retell-widget-modal-button-submit-color);
     }
 
-    .retell-contact-modal button.submit:hover {
-      background: #2563eb;
+    .rtl-w-contact-modal button.submit:hover {
+      background: var(--retell-widget-modal-button-submit-bg-hover);
     }
 
-    .retell-contact-modal button:disabled {
+    .rtl-w-contact-modal button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   \`;
 
   function injectStyles() {
-    if (!document.getElementById('retell-embed-styles')) {
+    if (!document.getElementById('rtl-w-styles')) {
       const style = document.createElement('style');
-      style.id = 'retell-embed-styles';
+      style.id = 'rtl-w-styles';
       style.textContent = WIDGET_STYLES;
       document.head.appendChild(style);
     }
@@ -425,23 +551,23 @@ export async function GET() {
 
         // Create modal overlay
         const overlay = document.createElement('div');
-        overlay.className = 'retell-access-modal-overlay';
+        overlay.className = 'rtl-w-access-modal-overlay';
 
         // Create modal
         const modal = document.createElement('div');
-        modal.className = 'retell-access-modal';
+        modal.className = 'rtl-w-access-modal';
 
         modal.innerHTML = \`
           <h3>Access Code Required</h3>
           <p>Please enter the access code to use this widget.</p>
           <input
             type="text"
-            id="retell-access-code-input"
+            id="rtl-w-access-code-input"
             placeholder="Enter access code"
             autocomplete="off"
           />
-          <div class="retell-access-error" id="retell-access-error" style="display: none;"></div>
-          <div class="retell-access-modal-buttons">
+          <div class="rtl-w-access-error" id="rtl-w-access-error" style="display: none;"></div>
+          <div class="rtl-w-access-modal-buttons">
             <button class="cancel">Cancel</button>
             <button class="submit">Continue</button>
           </div>
@@ -450,8 +576,8 @@ export async function GET() {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        const input = modal.querySelector('#retell-access-code-input');
-        const errorDiv = modal.querySelector('#retell-access-error');
+        const input = modal.querySelector('#rtl-w-access-code-input');
+        const errorDiv = modal.querySelector('#rtl-w-access-error');
         const cancelBtn = modal.querySelector('.cancel');
         const submitBtn = modal.querySelector('.submit');
 
@@ -523,53 +649,53 @@ export async function GET() {
 
         // Create modal overlay
         const overlay = document.createElement('div');
-        overlay.className = 'retell-contact-modal-overlay';
+        overlay.className = 'rtl-w-contact-modal-overlay';
 
         // Create modal
         const modal = document.createElement('div');
-        modal.className = 'retell-contact-modal';
+        modal.className = 'rtl-w-contact-modal';
 
         modal.innerHTML = \`
           <h3>Contact Information</h3>
           <p>Please provide your information to get started</p>
 
-          <div class="retell-contact-form-field">
-            <label for="retell-contact-name">Name *</label>
+          <div class="rtl-w-contact-form-field">
+            <label for="rtl-w-contact-name">Name *</label>
             <input
               type="text"
-              id="retell-contact-name"
+              id="rtl-w-contact-name"
               placeholder="John Doe"
               autocomplete="name"
               required
             />
-            <div class="retell-contact-error" id="retell-name-error"></div>
+            <div class="rtl-w-contact-error" id="rtl-w-name-error"></div>
           </div>
 
-          <div class="retell-contact-form-field">
-            <label for="retell-contact-company">Company *</label>
+          <div class="rtl-w-contact-form-field">
+            <label for="rtl-w-contact-company">Company *</label>
             <input
               type="text"
-              id="retell-contact-company"
+              id="rtl-w-contact-company"
               placeholder="Acme Corporation"
               autocomplete="organization"
               required
             />
-            <div class="retell-contact-error" id="retell-company-error"></div>
+            <div class="rtl-w-contact-error" id="rtl-w-company-error"></div>
           </div>
 
-          <div class="retell-contact-form-field">
-            <label for="retell-contact-email">Email *</label>
+          <div class="rtl-w-contact-form-field">
+            <label for="rtl-w-contact-email">Email *</label>
             <input
               type="email"
-              id="retell-contact-email"
+              id="rtl-w-contact-email"
               placeholder="john@example.com"
               autocomplete="email"
               required
             />
-            <div class="retell-contact-error" id="retell-email-error"></div>
+            <div class="rtl-w-contact-error" id="rtl-w-email-error"></div>
           </div>
 
-          <div class="retell-contact-modal-buttons">
+          <div class="rtl-w-contact-modal-buttons">
             <button class="cancel" type="button">Cancel</button>
             <button class="submit" type="button">Continue</button>
           </div>
@@ -578,12 +704,12 @@ export async function GET() {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        const nameInput = modal.querySelector('#retell-contact-name');
-        const companyInput = modal.querySelector('#retell-contact-company');
-        const emailInput = modal.querySelector('#retell-contact-email');
-        const nameError = modal.querySelector('#retell-name-error');
-        const companyError = modal.querySelector('#retell-company-error');
-        const emailError = modal.querySelector('#retell-email-error');
+        const nameInput = modal.querySelector('#rtl-w-contact-name');
+        const companyInput = modal.querySelector('#rtl-w-contact-company');
+        const emailInput = modal.querySelector('#rtl-w-contact-email');
+        const nameError = modal.querySelector('#rtl-w-name-error');
+        const companyError = modal.querySelector('#rtl-w-company-error');
+        const emailError = modal.querySelector('#rtl-w-email-error');
         const cancelBtn = modal.querySelector('.cancel');
         const submitBtn = modal.querySelector('.submit');
 
@@ -730,7 +856,7 @@ export async function GET() {
     
     createWidget() {
       const container = document.createElement('div');
-      container.className = 'retell-embed-widget';
+      container.className = 'rtl-w-widget';
       
       if (!this.widgetConfig) {
         container.innerHTML = '<div style="color: red;">Failed to load widget</div>';
@@ -773,10 +899,10 @@ export async function GET() {
     
     createInboundWebWidget(container) {
       const button = document.createElement('button');
-      button.className = 'retell-embed-button';
+      button.className = 'rtl-w-btn';
       button.innerHTML = \`
-        <span class="retell-icon">🎤</span>
-        <span class="retell-text">\${this.buttonText}</span>
+        <span class="rtl-w-icon">🎤</span>
+        <span class="rtl-w-text">\${this.buttonText}</span>
       \`;
       
       button.addEventListener('click', () => this.handleInboundWebClick());
@@ -791,17 +917,17 @@ export async function GET() {
       wrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 12px;';
 
       const button = document.createElement('button');
-      button.className = 'retell-embed-button';
+      button.className = 'rtl-w-btn';
       button.innerHTML = \`
-        <span class="retell-icon">📞</span>
-        <span class="retell-text">Loading phone number...</span>
+        <span class="rtl-w-icon">📞</span>
+        <span class="rtl-w-text">Loading phone number...</span>
       \`;
 
       button.addEventListener('click', () => this.handleInboundPhoneClick());
 
       // Create caption text element (shows button_text if provided)
       const caption = document.createElement('div');
-      caption.className = 'retell-phone-caption';
+      caption.className = 'rtl-w-phone-caption';
       caption.style.cssText = 'font-size: 14px; color: #64748b; text-align: center;';
       if (this.buttonText && this.buttonText !== 'Loading...') {
         caption.textContent = this.buttonText;
@@ -809,7 +935,7 @@ export async function GET() {
 
       // Create phone number display with copy button
       const phoneDisplay = document.createElement('div');
-      phoneDisplay.className = 'retell-phone-display';
+      phoneDisplay.className = 'rtl-w-phone-display';
       phoneDisplay.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569;';
       phoneDisplay.style.display = 'none'; // Hidden until phone number loads
 
@@ -831,20 +957,20 @@ export async function GET() {
     createOutboundPhoneWidget(container) {
       // Create phone input form
       const form = document.createElement('form');
-      form.className = 'retell-outbound-form';
+      form.className = 'rtl-w-outbound-form';
       
       const phoneInput = document.createElement('input');
       phoneInput.type = 'tel';
       phoneInput.placeholder = 'Enter your phone number';
-      phoneInput.className = 'retell-phone-input';
+      phoneInput.className = 'rtl-w-phone-input';
       phoneInput.required = true;
       
       const button = document.createElement('button');
       button.type = 'submit';
-      button.className = 'retell-embed-button';
+      button.className = 'rtl-w-btn';
       button.innerHTML = \`
-        <span class="retell-icon">📱</span>
-        <span class="retell-text">\${this.buttonText}</span>
+        <span class="rtl-w-icon">📱</span>
+        <span class="rtl-w-text">\${this.buttonText}</span>
       \`;
       
       form.addEventListener('submit', (e) => {
@@ -862,10 +988,10 @@ export async function GET() {
     
     createOutboundWebWidget(container) {
       const button = document.createElement('button');
-      button.className = 'retell-embed-button';
+      button.className = 'rtl-w-btn';
       button.innerHTML = \`
-        <span class="retell-icon">🔔</span>
-        <span class="retell-text">\${this.buttonText}</span>
+        <span class="rtl-w-icon">🔔</span>
+        <span class="rtl-w-text">\${this.buttonText}</span>
       \`;
       
       button.addEventListener('click', () => this.handleOutboundWebClick());
@@ -874,7 +1000,7 @@ export async function GET() {
       this.button = button;
 
       // Add ringing animation
-      button.style.animation = 'retell-ring 2s infinite';
+      button.style.animation = 'rtl-w-ring 2s infinite';
     }
 
     createErrorWidget(container) {
@@ -1218,7 +1344,7 @@ export async function GET() {
           const formattedNumber = this.formatPhoneNumber(data.phone_number);
 
           // Update button text with phone number
-          const textEl = this.button.querySelector('.retell-text');
+          const textEl = this.button.querySelector('.rtl-w-text');
           if (textEl) {
             textEl.textContent = formattedNumber;
           }
@@ -1262,7 +1388,7 @@ export async function GET() {
             }
           }
         } else {
-          const textEl = this.button.querySelector('.retell-text');
+          const textEl = this.button.querySelector('.rtl-w-text');
           if (textEl) {
             textEl.textContent = 'Phone number not available';
           }
@@ -1603,19 +1729,19 @@ export async function GET() {
     
     setState(state) {
       this.callState = state;
-      
+
       if (!this.button) return;
-      
-      this.button.className = \`retell-embed-button \${state}\`;
-      
-      const iconEl = this.button.querySelector('.retell-icon');
-      const textEl = this.button.querySelector('.retell-text');
-      
+
+      this.button.className = \`rtl-w-btn \${state}\`;
+
+      const iconEl = this.button.querySelector('.rtl-w-icon');
+      const textEl = this.button.querySelector('.rtl-w-text');
+
       if (!iconEl || !textEl) return;
-      
+
       switch (state) {
         case 'connecting':
-          iconEl.innerHTML = '<div class="retell-spinner"></div>';
+          iconEl.innerHTML = '<div class="rtl-w-spinner"></div>';
           textEl.textContent = 'Connecting...';
           break;
         case 'connected':
@@ -1685,21 +1811,57 @@ export async function GET() {
     }
   }
   
+  function injectDataAttributeStyles() {
+    // Check if any script tags have styling data attributes
+    const scripts = document.querySelectorAll('script[data-widget-id]');
+    const customStyles = [];
+
+    scripts.forEach(script => {
+      // Read all data-* attributes that start with styling properties
+      const buttonBg = script.getAttribute('data-button-bg');
+      const buttonColor = script.getAttribute('data-button-color');
+      const buttonRadius = script.getAttribute('data-button-radius');
+      const buttonPadding = script.getAttribute('data-button-padding');
+      const buttonFontSize = script.getAttribute('data-button-font-size');
+      const modalZIndex = script.getAttribute('data-modal-z-index');
+      const fontFamily = script.getAttribute('data-font-family');
+
+      // Build CSS custom properties if any are provided
+      if (buttonBg) customStyles.push(\`--retell-widget-button-bg: \${buttonBg};\`);
+      if (buttonColor) customStyles.push(\`--retell-widget-button-color: \${buttonColor};\`);
+      if (buttonRadius) customStyles.push(\`--retell-widget-button-radius: \${buttonRadius};\`);
+      if (buttonPadding) customStyles.push(\`--retell-widget-button-padding: \${buttonPadding};\`);
+      if (buttonFontSize) customStyles.push(\`--retell-widget-button-font-size: \${buttonFontSize};\`);
+      if (modalZIndex) customStyles.push(\`--retell-widget-z-index: \${modalZIndex};\`);
+      if (fontFamily) customStyles.push(\`--retell-widget-font-family: \${fontFamily};\`);
+    });
+
+    // Inject custom styles if any were found
+    if (customStyles.length > 0 && !document.getElementById('rtl-w-custom-styles')) {
+      const style = document.createElement('style');
+      style.id = 'rtl-w-custom-styles';
+      style.textContent = \`:root { \${customStyles.join(' ')} }\`;
+      document.head.appendChild(style);
+      console.log('🎨 Injected custom styles from data attributes:', customStyles.length);
+    }
+  }
+
   function initializeWidgets() {
     console.log('🚀 Initializing Retell widgets...');
     injectStyles();
-    
+    injectDataAttributeStyles();
+
     // Find all script tags with data-widget-id
     const scripts = document.querySelectorAll('script[data-widget-id]');
     console.log('📝 Found widget scripts:', scripts.length);
-    
+
     scripts.forEach(script => {
       const widgetId = script.getAttribute('data-widget-id');
       const buttonText = script.getAttribute('data-button-text');
       const customClass = script.getAttribute('data-class');
-      
+
       console.log('🔧 Processing widget:', { widgetId, buttonText });
-      
+
       if (widgetId && !script.dataset.initialized) {
         script.dataset.initialized = 'true';
         
