@@ -395,7 +395,12 @@ export async function GET() {
         }
 
         this.widgetConfig = await response.json();
-        console.log('🔧 Widget config loaded:', this.widgetConfig);
+        console.log('🔧 Widget config loaded:', {
+          widget_type: this.widgetConfig.widget_type,
+          contact_form_enabled: this.widgetConfig.contact_form_enabled,
+          require_access_code: this.widgetConfig.require_access_code,
+          button_text: this.widgetConfig.button_text
+        });
         this.buttonText = this.config.buttonText || this.widgetConfig.button_text || this.getDefaultButtonText();
 
       } catch (error) {
@@ -496,17 +501,22 @@ export async function GET() {
     }
 
     promptForContactInfo() {
+      console.log('📋 promptForContactInfo called for widget:', this.widgetId);
       return new Promise((resolve, reject) => {
         // Check sessionStorage first
         const sessionKey = \`retell_contact_info_\${this.widgetId}\`;
         const storedInfo = sessionStorage.getItem(sessionKey);
         if (storedInfo) {
           try {
+            console.log('✅ Using cached contact info from session storage');
             resolve(JSON.parse(storedInfo));
             return;
           } catch (e) {
+            console.log('⚠️ Invalid cached contact info, showing form');
             // Invalid stored data, continue to prompt
           }
+        } else {
+          console.log('📝 No cached contact info, showing form');
         }
 
         // Create modal overlay
@@ -645,6 +655,7 @@ export async function GET() {
 
           try {
             // Submit to backend API
+            console.log('📤 Submitting contact form to backend...');
             const response = await fetch(\`\${this.baseUrl}/api/widgets/\${this.widgetId}/contact-form\`, {
               method: 'POST',
               headers: {
@@ -656,8 +667,11 @@ export async function GET() {
 
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({ error: 'Failed to submit form' }));
+              console.error('❌ Contact form submission failed:', errorData);
               throw new Error(errorData.error || 'Failed to submit contact form');
             }
+
+            console.log('✅ Contact form submitted successfully to backend');
 
             // Store in sessionStorage
             sessionStorage.setItem(sessionKey, JSON.stringify(contactInfo));
@@ -665,7 +679,7 @@ export async function GET() {
             cleanup();
             resolve(contactInfo);
           } catch (error) {
-            console.error('Contact form submission error:', error);
+            console.error('❌ Contact form submission error:', error);
             emailError.textContent = error.message || 'Failed to submit. Please try again.';
             emailError.classList.add('visible');
             submitBtn.disabled = false;
@@ -937,7 +951,23 @@ export async function GET() {
         this.showError('Please enter a valid phone number');
         return;
       }
-      
+
+      // Check if contact form is required before initiating outbound phone call
+      console.log('🔍 [OUTBOUND_PHONE] Contact form enabled:', this.widgetConfig?.contact_form_enabled);
+      if (this.widgetConfig?.contact_form_enabled) {
+        try {
+          console.log('📋 [OUTBOUND_PHONE] Showing contact form...');
+          await this.promptForContactInfo();
+          console.log('✅ [OUTBOUND_PHONE] Contact form submitted successfully');
+          this.showSuccess('Thanks for filling out the form!');
+          await this.delay(1500); // Show success message briefly
+        } catch (error) {
+          console.log('❌ [OUTBOUND_PHONE] Contact form cancelled');
+          this.setState('idle');
+          return;
+        }
+      }
+
       await this.initiateOutboundCall(phoneNumber);
     }
     
@@ -952,12 +982,16 @@ export async function GET() {
     async startInboundWebCall() {
       try {
         // Check if contact form is required
+        console.log('🔍 [INBOUND_WEB] Contact form enabled:', this.widgetConfig?.contact_form_enabled);
         if (this.widgetConfig?.contact_form_enabled) {
           try {
+            console.log('📋 [INBOUND_WEB] Showing contact form...');
             await this.promptForContactInfo();
-            console.log('✅ Contact form submitted successfully');
+            console.log('✅ [INBOUND_WEB] Contact form submitted successfully');
+            this.showSuccess('Thanks for filling out the form!');
+            await this.delay(1500); // Show success message briefly
           } catch (error) {
-            console.log('Contact form cancelled');
+            console.log('❌ [INBOUND_WEB] Contact form cancelled');
             this.setState('idle');
             return;
           }
@@ -1050,6 +1084,22 @@ export async function GET() {
     
     async startOutboundWebCall() {
       try {
+        // Check if contact form is required
+        console.log('🔍 [OUTBOUND_WEB] Contact form enabled:', this.widgetConfig?.contact_form_enabled);
+        if (this.widgetConfig?.contact_form_enabled) {
+          try {
+            console.log('📋 [OUTBOUND_WEB] Showing contact form...');
+            await this.promptForContactInfo();
+            console.log('✅ [OUTBOUND_WEB] Contact form submitted successfully');
+            this.showSuccess('Thanks for filling out the form!');
+            await this.delay(1500); // Show success message briefly
+          } catch (error) {
+            console.log('❌ [OUTBOUND_WEB] Contact form cancelled');
+            this.setState('idle');
+            return;
+          }
+        }
+
         // Check if access code is required
         let accessCode = null;
         if (this.widgetConfig?.require_access_code) {
@@ -1342,12 +1392,16 @@ export async function GET() {
         const originalHTML = this.button.innerHTML;
         this.button.innerHTML = \`<span style="font-size: 12px;">\${message}</span>\`;
         this.button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-        
+
         setTimeout(() => {
           this.button.innerHTML = originalHTML;
           this.button.style.background = '';
         }, 4000);
       }
+    }
+
+    delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
     
     createVoiceModal(accessToken) {
