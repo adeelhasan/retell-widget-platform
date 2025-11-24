@@ -26,6 +26,7 @@ export async function GET() {
       --retell-widget-button-bg-connected: linear-gradient(135deg, #10b981 0%, #059669 100%);
       --retell-widget-button-bg-error: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
       --retell-widget-button-color: white;
+      --retell-widget-button-border: none;
       --retell-widget-button-padding: 12px 24px;
       --retell-widget-button-radius: 8px;
       --retell-widget-button-font-size: 14px;
@@ -120,7 +121,7 @@ export async function GET() {
     .rtl-w-btn {
       background: var(--retell-widget-button-bg);
       color: var(--retell-widget-button-color);
-      border: none;
+      border: var(--retell-widget-button-border);
       padding: var(--retell-widget-button-padding);
       border-radius: var(--retell-widget-button-radius);
       font-size: var(--retell-widget-button-font-size);
