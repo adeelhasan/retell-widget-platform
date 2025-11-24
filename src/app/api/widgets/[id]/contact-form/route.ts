@@ -40,8 +40,7 @@ function isValidEmail(email: string): boolean {
 }
 
 /**
- * Send email notification (placeholder for now)
- * TODO: Implement actual email sending via Resend/SendGrid
+ * Send email notification via Resend
  */
 async function sendContactFormEmail(
   collectorEmail: string,
@@ -52,33 +51,95 @@ async function sendContactFormEmail(
   },
   widgetName: string
 ): Promise<void> {
-  // TODO: Implement email sending
-  console.log('📧 Contact form submission received:');
-  console.log(`   Widget: ${widgetName}`);
-  console.log(`   To: ${collectorEmail}`);
-  console.log(`   From: ${formData.name} (${formData.email})`);
-  console.log(`   Company: ${formData.company}`);
+  const resendApiKey = process.env.RESEND_API_KEY;
 
-  // For now, just log. In production, integrate with Resend, SendGrid, or similar
-  // Example with Resend:
-  // await fetch('https://api.resend.com/emails', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     from: 'noreply@yourdomain.com',
-  //     to: collectorEmail,
-  //     subject: `New Contact Form Submission - ${widgetName}`,
-  //     html: `
-  //       <h2>New Contact Form Submission</h2>
-  //       <p><strong>Name:</strong> ${formData.name}</p>
-  //       <p><strong>Company:</strong> ${formData.company}</p>
-  //       <p><strong>Email:</strong> ${formData.email}</p>
-  //     `
-  //   })
-  // });
+  if (!resendApiKey) {
+    console.error('❌ RESEND_API_KEY not configured - email not sent');
+    throw new Error('Email service not configured');
+  }
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Widget Platform <notifications@yourdomain.com>';
+  const timestamp = new Date().toLocaleString('en-US', {
+    dateStyle: 'long',
+    timeStyle: 'short'
+  });
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: collectorEmail,
+        subject: `New Contact Form Submission - ${widgetName}`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); padding: 30px; border-radius: 12px 12px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">New Contact Form Submission</h1>
+            </div>
+
+            <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
+                You received a new contact from your widget: <strong style="color: #1f2937;">${widgetName}</strong>
+              </p>
+
+              <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #3b82f6;">
+                <div style="margin-bottom: 16px;">
+                  <p style="color: #6b7280; font-size: 12px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Name</p>
+                  <p style="color: #1f2937; font-size: 16px; margin: 0; font-weight: 600;">${formData.name}</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <p style="color: #6b7280; font-size: 12px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Company</p>
+                  <p style="color: #1f2937; font-size: 16px; margin: 0; font-weight: 600;">${formData.company}</p>
+                </div>
+
+                <div>
+                  <p style="color: #6b7280; font-size: 12px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Email</p>
+                  <p style="margin: 0;">
+                    <a href="mailto:${formData.email}" style="color: #3b82f6; font-size: 16px; font-weight: 600; text-decoration: none;">
+                      ${formData.email}
+                    </a>
+                  </p>
+                </div>
+              </div>
+
+              <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+                  <strong>Submitted:</strong> ${timestamp}
+                </p>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                This notification was sent from your Retell Widget Platform
+              </p>
+            </div>
+          </div>
+        `,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('❌ Resend API error:', errorData);
+      throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Email sent successfully via Resend');
+    console.log(`   Email ID: ${result.id}`);
+    console.log(`   To: ${collectorEmail}`);
+    console.log(`   Widget: ${widgetName}`);
+
+  } catch (error) {
+    console.error('❌ Failed to send contact form email:', error);
+    throw error; // Re-throw so caller knows it failed
+  }
 }
 
 // OPTIONS /api/widgets/[id]/contact-form - Handle CORS preflight
