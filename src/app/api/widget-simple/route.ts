@@ -250,7 +250,7 @@ export async function GET() {
       margin: 0 !important;
       padding: 0 !important;
       transform: none !important;
-      overflow: auto;
+      overflow: hidden;
     }
 
     .rtl-w-access-modal {
@@ -373,7 +373,7 @@ export async function GET() {
       margin: 0 !important;
       padding: 0 !important;
       transform: none !important;
-      overflow: auto;
+      overflow: hidden;
     }
 
     .rtl-w-contact-modal {
