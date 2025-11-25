@@ -828,13 +828,8 @@ export async function GET() {
           });
         });
 
-        // Close on overlay click
-        overlay.addEventListener('click', (e) => {
-          if (e.target === overlay) {
-            cleanup();
-            reject(new Error('Contact form cancelled'));
-          }
-        });
+        // Modal cannot be dismissed by clicking outside - must use Cancel button or submit form
+        // This ensures users provide contact info before proceeding
       });
     }
 
