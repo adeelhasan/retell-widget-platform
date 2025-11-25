@@ -2,14 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { isAllowedDomains } from '@/lib/security';
 
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin',
+      'Access-Control-Max-Age': '86400', // 24 hours
+    },
+  });
+}
+
 export async function GET(request: NextRequest) {
+  // CORS headers for all responses
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Origin',
+  };
+
   try {
     const { searchParams } = new URL(request.url);
     const widgetId = searchParams.get('widget_id');
     const origin = request.headers.get('origin');
 
     if (!widgetId) {
-      return NextResponse.json({ error: 'Widget ID required' }, { status: 400 });
+      return NextResponse.json({ error: 'Widget ID required' }, { status: 400, headers: corsHeaders });
     }
 
     // Get widget configuration
@@ -25,7 +45,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error || !widget) {
-      return NextResponse.json({ error: 'Widget not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Widget not found' }, { status: 404, headers: corsHeaders });
     }
 
     // Verify domain authorization
@@ -47,7 +67,7 @@ export async function GET(request: NextRequest) {
 
     if (!isAllowedDomains(effectiveOrigin, widget.allowed_domain)) {
       console.log('❌ Domain not authorized:', { origin, effectiveOrigin, allowed_domain: widget.allowed_domain });
-      return NextResponse.json({ error: 'Domain not authorized' }, { status: 403 });
+      return NextResponse.json({ error: 'Domain not authorized' }, { status: 403, headers: corsHeaders });
     }
 
     console.log('✅ Domain authorized for widget:', widget.id);
@@ -75,10 +95,10 @@ export async function GET(request: NextRequest) {
       response.outbound_phone_number = widget.outbound_phone_number;
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: corsHeaders });
 
   } catch (error) {
     console.error('Widget config error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders });
   }
 }
