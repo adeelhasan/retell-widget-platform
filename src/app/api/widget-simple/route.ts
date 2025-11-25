@@ -233,18 +233,24 @@ export async function GET() {
 
     /* Access Code Modal Styles */
     .rtl-w-access-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
       background: var(--retell-widget-overlay-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: var(--retell-widget-z-index);
+      z-index: 2147483647 !important;
       animation: rtl-w-fade-in 0.2s ease;
       font-family: var(--retell-widget-font-family);
+      margin: 0 !important;
+      padding: 0 !important;
+      transform: none !important;
+      overflow: auto;
     }
 
     .rtl-w-access-modal {
@@ -350,18 +356,24 @@ export async function GET() {
 
     /* Contact Form Modal Styles */
     .rtl-w-contact-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
       background: var(--retell-widget-overlay-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: var(--retell-widget-z-index);
+      z-index: 2147483647 !important;
       animation: rtl-w-fade-in 0.2s ease;
       font-family: var(--retell-widget-font-family);
+      margin: 0 !important;
+      padding: 0 !important;
+      transform: none !important;
+      overflow: auto;
     }
 
     .rtl-w-contact-modal {
