@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Widget for a Callback (Site Builder Mode)</title>
+
+    <!-- SITE BUILDER MODE: Load widget script in <head> -->
+    <script src="https://retell-widget-platform.vercel.app/widget.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 60px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #1a202c;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 18px;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .widget-section {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 40px 20px;
+            margin: 40px 0;
+            transition: all 0.3s ease;
+        }
+
+        .widget-section:hover {
+            border-color: #667eea;
+            background: #f1f5f9;
+        }
+
+        .widget-label {
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .feature h3 {
+            color: #1a202c;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation for widget load */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Badge for site builder mode */
+        .mode-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📞</div>
+
+        <div class="mode-badge">🏗️ Site Builder Mode</div>
+
+        <h1>Widget Integration Example</h1>
+        <p class="subtitle">
+            Call Me Back Demo - Using Site Builder Method
+        </p>
+
+        <!-- Widget Section -->
+        <div class="widget-section">
+            <div class="widget-label">📱 Outbound Phone Widget - Request Callback</div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                Enter your phone number to receive a call from our AI assistant within seconds
+            </p>
+
+            <!-- SITE BUILDER MODE: Widget renders into this div -->
+            <div data-retell-widget="59fa469d-3e90-454b-b54e-f7cb51d3b519"></div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">NEW</div>
+                <h3>Site Builder Mode</h3>
+                <p>Script loads in &lt;head&gt;, widget renders into designated div</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">FLEX</div>
+                <h3>Flexible Placement</h3>
+                <p>Perfect for Wix, Squarespace, Webflow, WordPress</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">SIZE</div>
+                <h3>Dimension Control</h3>
+                <p>Add width/height styles to the container div</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong>How it works:</strong> The script in &lt;head&gt; looks for
+                <code>data-retell-widget</code> divs and renders the widget into them.
+                This is the same widget as callback-demo.html but using the new embedding method.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
