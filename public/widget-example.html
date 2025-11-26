@@ -310,12 +310,43 @@
         
             
             
-            <!-- 
+            <!--
+            ============================================================
+            SITE BUILDER MODE (For Wix, Squarespace, Webflow, etc.)
+            ============================================================
+
+            If your site builder separates <head> and <body> content:
+
+            Step 1: Add this to your site's <head> or "Custom Code" section:
+            ────────────────────────────────────────────────────────────
+            <script src="https://retell-widget-platform.vercel.app/widget.js"></script>
+
+
+            Step 2: Add this div where you want the widget to appear:
+            ────────────────────────────────────────────────────────────
+            <div data-retell-widget="your-widget-id-here"></div>
+
+
+            Optional: Add button text customization:
+            ────────────────────────────────────────────────────────────
+            <div
+              data-retell-widget="your-widget-id-here"
+              data-button-text="Talk to Us">
+            </div>
+
+
+            Optional: Control widget size with CSS:
+            ────────────────────────────────────────────────────────────
+            <div
+              data-retell-widget="your-widget-id-here"
+              style="width: 200px; height: 60px;">
+            </div>
+
             ============================================================
             END EMBED CODE SECTION
             ============================================================
             -->
-            
+
             <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px; margin-top: 16px;">
                 <p style="color: #92400e; font-size: 14px; font-weight: 600; margin-bottom: 4px;"><strong>!</strong> Demo Widget (Non-Functional)</p>
                 <p style="color: #92400e; font-size: 12px; margin-bottom: 8px;">
