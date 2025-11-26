@@ -4,27 +4,29 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 
 ## Why This Project?
 
-[Retell AI](https://www.retellai.com/) provides powerful voice AI agents that can be embedded on websites. However, the traditional approach requires either:
+[Retell AI](https://www.retellai.com/) provides powerful voice AI agents for phone and web. While Retell offers a [chat widget](https://docs.retellai.com/deploy/chat-widget) that works with public keys (client-side), **web voice calls require API keys** which must be kept server-side for security.
 
-1. **Exposing your API key client-side** (❌ security risk)
-2. **Setting up your own backend server** (⏰ time-consuming, requires infrastructure)
-3. **Managing authentication, rate limiting, and domain security yourself** (🛠️ complex)
+**The challenge:** Embedding web voice agents requires:
 
-**This platform solves all of that.** It provides a secure, hosted middleware layer that:
+1. **Backend infrastructure** - Set up a server to securely create web calls
+2. **API security** - Protect your Retell API key (can't be exposed client-side)
+3. **Custom implementation** - Build domain verification, rate limiting, metadata handling yourself
 
-- 🌟 **Dynamic metadata passing** - Pass context from your webpage to voice agents (customer name, product details, cart value, etc.) - **unique to this platform!**
+**This platform solves all of that.** It provides a secure, multi-tenant middleware layer that:
+
 - ✅ **Keeps API keys server-side** - Your Retell API keys never touch the client
-- ✅ **One-line integration** - Just add a `<script>` tag, no backend setup needed
+- ✅ **One-line integration** - Just add a `<script>` tag, no backend coding needed
+- 🌟 **Dynamic metadata passing** - Auto-inject page context into voice calls (customer name, product details, cart value, etc.)
 - ✅ **Built-in security** - Domain verification, database-backed rate limiting, optional password protection
 - ✅ **Multi-tenant dashboard** - Manage multiple widgets for different websites
 - ✅ **Production-ready** - Deploy to Vercel in minutes with Supabase backend
 
 ### How It Compares
 
-| Approach | Security | Dynamic Metadata | Setup Time | Infrastructure |
-|----------|----------|------------------|------------|----------------|
-| **Retell Native Widget** | ❌ API keys exposed | ❌ Not supported | ⚡ 5 min | None |
-| **Custom backend** ([Retell docs](https://docs.retellai.com/get-started/web-voice-agent)) | ✅ Secure | ⚠️ Requires custom code | ⏰ Hours/days | Required |
+| Approach | API Security | Dynamic Metadata | Setup Time | Infrastructure |
+|----------|--------------|------------------|------------|----------------|
+| **Retell Chat Widget** | ✅ Public key (safe) | ✅ Via data attributes | ⚡ 5 min | None |
+| **DIY Backend** ([Retell docs](https://docs.retellai.com/api-references/create-web-call)) | ✅ Secure | ⚠️ Custom code required | ⏰ Hours/days | Required |
 | **This Platform** | ✅ Secure | ✅ **Built-in & easy** | ⚡ 10 min | Managed (Vercel + Supabase) |
 
 ---
@@ -39,6 +41,8 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 **Getting Started**
 - [Quick Start](#-quick-start) - Get running in 5 minutes
 - [Widget Integration](#-widget-integration) - Embed code examples
+- [Widget Customization](#-widget-customization) - Styling and appearance
+- [Site Builder Integration](#-site-builder-integration) - Wix, Squarespace, Webflow
 - [Password Protection](#password-protected-widget) - Optional security
 
 **Setup & Deployment**
@@ -57,61 +61,20 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 
 ## 🎯 What You Can Build
 
-### Four Widget Types for Every Use Case
+Four widget types for different engagement scenarios:
 
-#### 🎤 Inbound Web - Browser Voice Chat
-**Use Case**: Customer support, sales demos, interactive FAQs
-**How It Works**: User clicks button → microphone activates → instant voice conversation in browser
+| Widget Type | Use Case | How It Works | Perfect For |
+|-------------|----------|--------------|-------------|
+| 🎤 **Inbound Web** | Browser voice chat | Click button → instant voice conversation | Sales demos, support, product help |
+| 📞 **Inbound Phone** | Traditional phone support | Display number → user calls → AI answers | 24/7 reception, appointment scheduling |
+| 📱 **Outbound Phone** | We'll call you | User enters number → AI calls within seconds | Lead capture, callbacks, surveys |
+| 🔔 **Outbound Web** | Simulated incoming call | Widget rings → user answers → message delivered | Flash sales, cart recovery, VIP outreach |
 
-```html
-<script src="your-domain/api/widget-simple" data-widget-id="your-id"></script>
-```
-
-**Perfect For**:
-- "Talk to Sales" buttons on landing pages
-- Customer support chat alternatives
-- Product demo scheduling
-- Interactive help centers
-
----
-
-#### 📞 Inbound Phone - Call Our Number
-**Use Case**: Traditional phone support with AI answering
-**How It Works**: Widget displays your phone number → user calls → AI agent answers
-
-**Perfect For**:
-- Business support lines
-- Appointment scheduling by phone
-- Order status inquiries
-- 24/7 automated reception
-
----
-
-#### 📱 Outbound Phone - We'll Call You
-**Use Case**: Lead capture, callbacks, appointment reminders
-**How It Works**: User enters phone number → AI calls them within seconds → personalized conversation
-
-**Perfect For**:
-- "Request callback" forms
-- Lead qualification
-- Appointment confirmations
-- Customer surveys
-- Demo bookings
-
-**Bonus**: Automatically formats US phone numbers - users can enter `(555) 123-4567`, `555-123-4567`, or `5551234567`
-
----
-
-#### 🔔 Outbound Web - Simulated Incoming Call
-**Use Case**: Proactive engagement, urgent notifications
-**How It Works**: Widget displays as "incoming call" → user answers in browser → agent delivers message
-
-**Perfect For**:
-- Flash sale notifications
-- Abandoned cart recovery
-- Limited-time offers
-- VIP customer outreach
-- Breaking news alerts
+**All widgets support**:
+- Dynamic metadata injection (customer name, product details, etc.)
+- Customizable styling and branding
+- Domain verification and rate limiting
+- Optional password protection
 
 ---
 
@@ -139,9 +102,9 @@ Your widgets can automatically pass page context to Retell agents using hidden f
 
 **Your agent receives**: All form values as `{{customer_name}}`, `{{product_interest}}`, `{{cart_value}}`
 
-### Real-World Examples
+### Real-World Example
 
-**E-commerce: Personalized Product Support**
+**E-commerce Product Support:**
 ```html
 <form class="retell-metadata" data-widget-id="abc123">
   <input type="hidden" name="customer_name" value="Sarah">
@@ -150,29 +113,32 @@ Your widgets can automatically pass page context to Retell agents using hidden f
   <input type="hidden" name="loyalty_tier" value="Gold Member">
 </form>
 ```
-*Agent prompt*: "Hello {{customer_name}}! I see you're interested in the {{product_name}}. As a {{loyalty_tier}}, you qualify for free expedited shipping!"
+*Agent greeting*: "Hello {{customer_name}}! I see you're interested in the {{product_name}}. As a {{loyalty_tier}}, you qualify for free expedited shipping!"
 
-**Real Estate: Context-Aware Agent**
+<details>
+<summary><strong>More examples: Real Estate, Lead Generation</strong></summary>
+
+**Real Estate:**
 ```html
 <form class="retell-metadata" data-widget-id="abc123">
   <input type="hidden" name="property_address" value="123 Oak Street">
   <input type="hidden" name="listing_price" value="$650,000">
   <input type="hidden" name="bedrooms" value="3">
-  <input type="hidden" name="square_feet" value="2100">
 </form>
 ```
-*Agent prompt*: "I'm calling about {{property_address}}, the {{bedrooms}} bedroom home listed at {{listing_price}}. Would you like to schedule a viewing?"
+*Agent*: "I'm calling about {{property_address}}, the {{bedrooms}} bedroom home listed at {{listing_price}}..."
 
-**Lead Generation: Smart Qualification**
+**Lead Generation:**
 ```html
 <form class="retell-metadata" data-widget-id="abc123">
   <input type="hidden" name="company_name" value="TechCorp Inc">
-  <input type="hidden" name="company_size" value="50-100 employees">
   <input type="hidden" name="plan_interest" value="Enterprise">
   <input type="hidden" name="referral_source" value="LinkedIn Ad">
 </form>
 ```
-*Agent prompt*: "Thanks for your interest from {{company_name}}! I see you came from {{referral_source}} and are interested in our {{plan_interest}} plan. Let me help you..."
+*Agent*: "Thanks for your interest from {{company_name}}! I see you came from {{referral_source}}..."
+
+</details>
 
 ### Auto-Injected System Context
 
@@ -323,117 +289,178 @@ See `public/widget-example.html` for a complete working example with styling and
 
 ---
 
-## 🛠️ Installation
+## 🎨 Widget Customization
+
+Customize widget appearance using **data attributes** (simple) or **CSS variables** (advanced).
+
+**Quick example (data attributes):**
+```html
+<script src="..." data-widget-id="..."
+  data-button-bg="#10b981"
+  data-button-color="white"
+  data-button-radius="20px">
+</script>
+```
+
+<details>
+<summary><strong>All customization options</strong></summary>
+
+### Method 1: Data Attributes
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-button-bg` | Background (solid/gradient) | `#10b981` or `linear-gradient(...)` |
+| `data-button-color` | Text color | `white` |
+| `data-button-radius` | Border radius | `20px` |
+| `data-button-padding` | Padding | `14px 28px` |
+| `data-button-font-size` | Font size | `16px` |
+| `data-modal-z-index` | Modal z-index | `99999` |
+| `data-font-family` | Font family | `'Arial', sans-serif` |
+
+### Method 2: CSS Variables (Advanced)
+
+```html
+<style>
+  :root {
+    --retell-widget-button-bg: #10b981;
+    --retell-widget-button-color: white;
+    --retell-widget-button-radius: 20px;
+    /* 20+ more variables available */
+  }
+</style>
+```
+
+**Available CSS variables:** button (bg, color, hover, radius, padding, font-size, font-weight, shadow), modal (bg, border-radius, shadow, z-index), form (input-border, input-focus-border, input-radius), colors (primary, error, success), typography (font-family)
+
+### Method 3: Dashboard Defaults
+
+Set button text and default metadata in dashboard (applies to all instances).
+
+</details>
+
+**No CSS conflicts:** Uses unique `.rtl-w-*` class prefixes and scoped reset—safe to use with any framework.
+
+---
+
+## 🏗️ Site Builder Integration
+
+For **Wix, Squarespace, Webflow, Framer**, etc. that separate `<head>` and `<body>` content.
+
+**Two-step setup:**
+
+1. **Add to site header** (Settings → Custom Code):
+   ```html
+   <script src="https://your-app.vercel.app/widget.js"></script>
+   ```
+
+2. **Add where you want it** (HTML block/embed):
+   ```html
+   <div data-retell-widget="your-widget-id"></div>
+   ```
+
+**Customization:** Add data attributes or inline styles to the div:
+```html
+<div data-retell-widget="..."
+  data-button-text="Call Us"
+  data-button-bg="#10b981"
+  style="max-width: 250px;">
+</div>
+```
+
+<details>
+<summary><strong>Platform-specific instructions: Wix • Squarespace • Webflow • Framer</strong></summary>
+
+### Wix
+1. Settings → Custom Code → Add widget.js script in `<head>` → Apply
+2. Add "HTML iframe" element → Paste div code → Resize
+
+### Squarespace
+1. Settings → Advanced → Code Injection → Paste in "Header" → Save
+2. Add "Code Block" → Paste div code → Adjust size
+
+### Webflow
+1. Project Settings → Custom Code → Paste in "Head Code" → Save
+2. Add "Embed" element → Paste div code → Set size → Publish
+
+### Framer
+1. Page Settings → "Start of `<head>` tag" → Paste script
+2. Add "Code" component → Paste div code → Resize
+
+</details>
+
+**Benefits:** Script loads once, supports multiple widgets, easier for non-technical users.
+
+**Backwards compatible:** Original inline `<script>` method still works for custom sites.
+
+---
+
+## 🛠️ Setup & Deployment
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
-- A [Supabase](https://supabase.com) account
-- A [Retell AI](https://www.retellai.com/) account
+- Node.js 18+ and npm
+- [Supabase](https://supabase.com) account
+- [Retell AI](https://www.retellai.com/) account
 
-### Setup Steps
+### Quick Deploy to Production
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/retell-web-agent-middleware.git
-   cd retell-web-agent-middleware
-   ```
+1. **Fork and deploy to Vercel**
+   - Fork this repository
+   - Visit [vercel.com](https://vercel.com) and import your fork
+   - Deploy (Vercel will auto-detect Next.js)
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up Supabase**
+2. **Set up Supabase database**
    - Create a new project at [supabase.com](https://supabase.com)
-   - Go to Project Settings → API
-   - Copy your project URL and API keys
+   - Go to SQL Editor
+   - Copy contents of `database-setup.sql` from this repo
+   - Paste and run in SQL Editor
 
-4. **Configure environment variables**
-   ```bash
-   cp .env.example .env.local
-   ```
-
-   Update `.env.local` with your values:
+3. **Configure environment variables in Vercel**
+   - Go to your Vercel project → Settings → Environment Variables
+   - Add these values (find in Supabase: Project Settings → API):
    ```
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   ```
-
-### Database Setup
-
-1. **Open Supabase SQL Editor**
-   - Go to your Supabase project dashboard
-   - Click "SQL Editor" in the left sidebar
-
-2. **Run the schema**
-   - Open `database-setup.sql` from this project
-   - Copy all contents
-   - Paste into Supabase SQL Editor
-   - Click "Run"
-
-This will create:
-- `widgets` table with Row Level Security (RLS)
-- Widget type enum
-- All necessary constraints and indexes
-- RLS policies for multi-tenant isolation
-
-### Development Commands
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production  
-npm run typecheck    # TypeScript validation
-npm run lint         # Run ESLint
-npm run pre-push     # Run pre-push checks (typecheck + build)
-npm run setup-hooks  # Set up git hooks for automated checks
-```
-
-### 🛠️ Git Hooks
-This project includes automated pre-push checks to prevent build failures:
-- **Type checking** with TypeScript
-- **Production build** validation
-- **ESLint** warnings (non-blocking)
-
-To set up git hooks after cloning:
-```bash
-npm run setup-hooks
-```
-
-The pre-push hook will run automatically before every `git push`. To bypass (not recommended):
-```bash
-git push --no-verify
-```
-
-## 🚀 Deployment
-
-### Deploy to Vercel
-
-1. **Push to GitHub**
-   ```bash
-   git remote add origin your-github-repo-url
-   git push -u origin main
-   ```
-
-2. **Deploy on Vercel**
-   - Visit [vercel.com](https://vercel.com)
-   - Import your GitHub repository
-   - Configure environment variables (see .env.example)
-   - Deploy
-
-3. **Required Environment Variables in Vercel**
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key  
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
    ```
+   - Redeploy to apply environment variables
 
-### Post-Deployment
-- Update widget test URLs to use your production domain
-- Test widget functionality from external websites
-- Configure custom domain if needed
+4. **Start creating widgets**
+   - Visit your deployed URL
+   - Sign up for an account
+   - Create your first widget with your Retell agent ID
+
+### Local Development Setup
+
+```bash
+# Clone and install
+git clone https://github.com/your-username/retell-web-agent-middleware.git
+cd retell-web-agent-middleware
+npm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your Supabase credentials
+
+# Set up git hooks (optional but recommended)
+npm run setup-hooks
+
+# Start development server
+npm run dev
+```
+
+**Development commands:**
+```bash
+npm run dev          # Start dev server (localhost:3000)
+npm run build        # Test production build
+npm run typecheck    # TypeScript validation
+npm run lint         # Run ESLint
+```
+
+**Git hooks** (automated pre-push checks):
+- TypeScript type checking
+- Production build validation
+- Prevents broken code from being pushed
 
 ---
 
@@ -441,164 +468,83 @@ git push --no-verify
 
 ### 🔒 Security Features
 
-- **Domain Verification**: Widgets restricted to authorized domains
-- **Rate Limiting**: Configurable per-widget call limits (see limitations below)
-- **Daily Minutes Limits**: Prevent budget overruns with daily minute caps (see below)
-- **Row Level Security**: Database-level access control
-- **Input Validation**: Server-side validation for all inputs
-
-#### Daily Minutes Limit (Cost Control)
-
-**What It Does:**
-- Set a maximum total call minutes per day per widget
-- Automatically blocks new calls once limit is reached
-- Resets at midnight UTC
-- Prevents budget overruns from unexpectedly long calls
-
-**How It Works:**
-1. Enable "Daily Minutes Limit" in widget settings
-2. Set maximum minutes (e.g., 60 minutes = 1 hour/day)
-3. Each call start is logged to database
-4. Call durations are synced every 10 minutes via Supabase pg_cron
-5. Before starting new calls, system checks if today's total < limit
-
-**Important Notes:**
-- 🔄 **Configurable sync frequency**: Sync every 10 minutes using Supabase pg_cron (recommended)
-- ✅ **Limits enforced at call-start**: New calls are blocked immediately when limit reached
-- ✅ **Accurate tracking**: Durations fetched from Retell API for precision
-- 🔄 **Auto-cleanup**: Old call logs deleted after 7 days (configurable via `CALL_LOGS_RETENTION_DAYS`)
-
-**Example Use Case:**
-- Set 120 minutes/day limit
-- Your Retell plan costs $0.10/minute
-- Maximum daily cost = $12 per widget
-- Total protection from runaway costs
-
-**Database Tables:**
-- `call_logs`: Tracks all calls with duration and status
-- `widgets.daily_minutes_limit`: Per-widget limit setting
-- `widgets.daily_minutes_enabled`: Enable/disable toggle
-
-**Configuration:**
-```bash
-# Optional environment variable (defaults to 7 days)
-CALL_LOGS_RETENTION_DAYS=7
-
-# Required for cron job authentication
-CRON_SECRET=your-secure-random-string
-```
-
-**Cron Job Setup:**
+**Core Security:**
+- **Domain Verification** - Restrict widgets to authorized domains only
+- **Rate Limiting** - Database-backed, configurable per-widget (default: 10 calls/hour)
+- **Daily Minutes Limits** - Budget control with daily minute caps
+- **Password Protection** - Optional access codes for semi-private widgets
+- **Row Level Security** - Database-level multi-tenant isolation
 
 <details>
-<summary><strong>Supabase pg_cron (Recommended - Free & Flexible)</strong></summary>
+<summary><strong>Daily Minutes Limit (Cost Control)</strong></summary>
 
-Use Supabase's built-in cron (works on free tier, can run every 10 minutes):
+**What it does:**
+- Set max daily call minutes per widget (e.g., 120 min/day = max $12/day at $0.10/min)
+- Automatically blocks new calls when limit reached
+- Resets at midnight UTC
+- Call durations synced every 10 minutes via Supabase pg_cron
 
-1. **Enable required extensions** in Supabase SQL Editor:
+**Setup:**
+1. Enable in widget settings and set minute limit
+2. Configure environment variable: `CRON_SECRET=your-secret`
+3. Enable Supabase extensions and schedule cron job:
+
 ```sql
--- Enable pg_net for HTTP requests
+-- Enable extensions
 CREATE EXTENSION IF NOT EXISTS pg_net;
-
--- Enable pg_cron for scheduling
 CREATE EXTENSION IF NOT EXISTS pg_cron;
-```
 
-2. **Schedule the cron job** to call your Vercel endpoint:
-```sql
--- Schedule to run every 10 minutes
+-- Schedule sync (every 10 minutes)
 SELECT cron.schedule(
-  'sync-call-durations',           -- Job name
-  '*/10 * * * *',                  -- Every 10 minutes
+  'sync-call-durations',
+  '*/10 * * * *',
   $$
   SELECT net.http_post(
     url := 'https://your-app.vercel.app/api/cron/sync-call-durations',
-    headers := jsonb_build_object(
-      'Authorization',
-      'Bearer YOUR_CRON_SECRET'
-    )
+    headers := jsonb_build_object('Authorization', 'Bearer YOUR_CRON_SECRET')
   );
   $$
 );
 ```
 
-3. **Verify it's scheduled:**
-```sql
-SELECT * FROM cron.job;
-```
-
-**To update the schedule:**
-```sql
--- Unschedule old job
-SELECT cron.unschedule('sync-call-durations');
-
--- Schedule with new frequency
-SELECT cron.schedule(...);
-```
-
-**Advantages:**
-- ✅ Free tier supports it
-- ✅ Can run every 10 minutes for more accurate tracking
-- ✅ No Vercel plan upgrade needed
-- ✅ Native to your database
+**Database tables:** `call_logs`, `widgets.daily_minutes_limit`, `widgets.daily_minutes_enabled`
 
 </details>
 
-#### Rate Limiting (Production-Ready)
+<details>
+<summary><strong>Rate Limiting Details</strong></summary>
 
-**Current Implementation:**
-- ✅ Database-backed rate limiting using `call_logs` table
-- ✅ Sliding window algorithm (1-hour window by default)
-- ✅ Works reliably across server restarts and multi-instance deployments
-- ✅ Race condition prevention (rapid clicks properly blocked)
-- ✅ Applied to public widget endpoints: `/api/v1/register-call`, `/api/v1/outbound-call`
-
-**How It Works:**
-1. Each call attempt queries the `call_logs` table for recent calls within the time window
-2. If count >= limit, request is blocked with HTTP 429
-3. If allowed, a placeholder entry is created immediately (prevents race conditions)
-4. After successful Retell API call, placeholder is updated with actual call ID
-5. If call fails, placeholder is deleted (cleanup)
-
-**Key Features:**
-- ✅ **Persistent**: Rate limits survive server restarts
-- ✅ **Multi-instance safe**: Works correctly with serverless/multiple instances
-- ✅ **Audit trail**: All call attempts logged to database
-- ✅ **Race condition safe**: Rapid button clicks properly blocked
-- ✅ **Per-widget configuration**: Each widget has its own configurable limit
+**Implementation:**
+- Database-backed using `call_logs` table (survives restarts, multi-instance safe)
+- Sliding window algorithm (default: 1-hour window)
+- Race condition prevention (rapid clicks blocked)
+- Per-widget configuration in dashboard
 
 **Configuration:**
 ```bash
-# Environment variables (optional, defaults shown)
-RATE_LIMIT_CALLS_PER_HOUR=10     # Global default
-RATE_LIMIT_WINDOW_MS=3600000     # 1 hour in milliseconds
+RATE_LIMIT_CALLS_PER_HOUR=10      # Global default
+RATE_LIMIT_WINDOW_MS=3600000      # 1 hour
 ```
 
-**Per-Widget Overrides:**
-Set custom limits in the dashboard:
-- Enable/disable rate limiting per widget
-- Override global limit with widget-specific value
-- Set to `0` to use the system default (10 calls/hour)
-- Example: VIP widgets can have higher limits (e.g., 100 calls/hour)
+**Per-widget overrides:** Set custom limits in dashboard (0 = use default)
 
-#### Bot Protection Strategies
+</details>
 
-**Current Protection:**
-- Domain verification (prevents unauthorized domains)
-- Rate limiting (limits abuse per widget)
-- Optional access code protection (password-protect widgets)
+<details>
+<summary><strong>Bot Protection & Additional Security</strong></summary>
 
-**Additional Protection Options (Future):**
-1. **Cloudflare Protection** (Recommended)
-   - Enable on the page hosting the widget (customer's website)
-   - Bot Fight Mode, Turnstile CAPTCHA, or WAF rules
-   - Protects at CDN level before requests reach your API
+**Current protection:**
+- Domain verification
+- Rate limiting
+- Optional access codes
 
-2. **IP-Based Rate Limiting** (Future Enhancement)
-   - Track calls per IP address in addition to widget ID
-   - Prevents single attacker from rotating widget IDs
+**Recommended additions for production:**
+- **Cloudflare** on widget host page (Bot Fight Mode, Turnstile CAPTCHA)
+- **IP-based rate limiting** (future enhancement)
 
-**Note**: As a demo project, basic domain verification + rate limiting provides reasonable protection. For production, implement layered security based on your threat model.
+**Note:** As a demo/starter project, current security provides reasonable protection. Scale security based on your threat model.
+
+</details>
 
 ### 🧪 Testing
 
