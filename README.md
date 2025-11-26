@@ -23,11 +23,11 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 
 ### How It Compares
 
-| Approach | API Security | Dynamic Metadata | Setup Time | Infrastructure |
-|----------|--------------|------------------|------------|----------------|
-| **Retell Chat Widget** | ✅ Public key (safe) | ✅ Via data attributes | ⚡ 5 min | None |
-| **DIY Backend** ([Retell docs](https://docs.retellai.com/api-references/create-web-call)) | ✅ Secure | ⚠️ Custom code required | ⏰ Hours/days | Required |
-| **This Platform** | ✅ Secure | ✅ **Built-in & easy** | ⚡ 10 min | Managed (Vercel + Supabase) |
+| Approach | API Security | Dynamic Metadata | Styling | Usage Limits | Setup Time | Infrastructure |
+|----------|--------------|------------------|---------|--------------|------------|----------------|
+| **Retell Chat Widget** | ✅ Public key (safe) | ✅ Via data attributes | Good | None | ⚡ 5 min | None |
+| **DIY Backend** ([Retell docs](https://docs.retellai.com/api-references/create-web-call)) | ✅ Secure | ⚠️ Custom code required | Extensive | Custom | ⏰ Hours/days | Required |
+| **This Platform** | ✅ Secure | ✅ **Built-in & easy** | Extensive | Built-in | ⚡ 10 min | Managed |
 
 ---
 
