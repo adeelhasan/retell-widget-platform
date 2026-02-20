@@ -12,9 +12,87 @@ export async function GET() {
   
   window.RetellWidgetLoader = {
     loaded: false,
-    widgets: []
+    widgets: [],
+    widgetMap: {}
   };
-  
+
+  // Pending open() calls made before widgets are initialized
+  var pendingOpenCalls = [];
+
+  // Global JS API for programmatic widget triggers
+  window.RetellWidget = window.RetellWidget || {};
+  window.RetellWidget.open = function(widgetId) {
+    if (!widgetId) {
+      console.error('RetellWidget.open(): widgetId is required');
+      return;
+    }
+    if (!window.RetellWidgetLoader.loaded) {
+      console.log('⏳ RetellWidget.open(): widgets not yet initialized, queuing call for', widgetId);
+      pendingOpenCalls.push(widgetId);
+      return;
+    }
+    dispatchOpen(widgetId, 0);
+  };
+
+  function dispatchOpen(widgetId, retryCount) {
+    var widget = window.RetellWidgetLoader.widgetMap[widgetId];
+    if (!widget) {
+      console.error('RetellWidget.open(): no widget found with id "' + widgetId + '"');
+      return;
+    }
+
+    // If config is still loading, retry up to 10 times at 500ms intervals
+    if (!widget.widgetConfig) {
+      if (retryCount < 10) {
+        console.log('⏳ RetellWidget.open(): config still loading for', widgetId, '- retry', retryCount + 1);
+        setTimeout(function() { dispatchOpen(widgetId, retryCount + 1); }, 500);
+      } else {
+        console.error('RetellWidget.open(): timed out waiting for widget config for "' + widgetId + '"');
+      }
+      return;
+    }
+
+    // Guard: error state
+    if (widget.widgetConfig.widget_type === 'error') {
+      console.error('RetellWidget.open(): widget "' + widgetId + '" is in error state:', widget.widgetConfig.error_message);
+      return;
+    }
+
+    // Guard: call already in progress
+    if (widget.callState === 'connecting' || widget.callState === 'connected') {
+      console.warn('RetellWidget.open(): call already in progress for "' + widgetId + '"');
+      return;
+    }
+
+    // Route to the correct handler by widget type
+    switch (widget.widgetConfig.widget_type) {
+      case 'inbound_web':
+        widget.handleInboundWebClick();
+        break;
+      case 'outbound_web':
+        widget.handleOutboundWebClick();
+        break;
+      case 'inbound_phone':
+        widget.handleInboundPhoneClick();
+        break;
+      case 'outbound_phone':
+        console.error('RetellWidget.open(): outbound_phone widgets require the phone number form and cannot be triggered programmatically');
+        break;
+      default:
+        console.error('RetellWidget.open(): unknown widget type "' + widget.widgetConfig.widget_type + '"');
+    }
+  }
+
+  function flushPendingCalls() {
+    if (pendingOpenCalls.length > 0) {
+      console.log('🔄 Flushing', pendingOpenCalls.length, 'pending RetellWidget.open() calls');
+      pendingOpenCalls.forEach(function(widgetId) {
+        dispatchOpen(widgetId, 0);
+      });
+      pendingOpenCalls = [];
+    }
+  }
+
   // Widget styling with CSS custom properties
   const WIDGET_STYLES = \`
     /* CSS Custom Properties - Users can override these */
@@ -1906,7 +1984,9 @@ export async function GET() {
     });
 
     window.RetellWidgetLoader.widgets.push(widget);
+    window.RetellWidgetLoader.widgetMap[widgetId] = widget;
     window.RetellWidgetLoader.loaded = true;
+    flushPendingCalls();
 
     console.log('✅ Retell Widget (Site Builder Mode) initialized successfully');
   }

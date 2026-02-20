@@ -361,6 +361,63 @@
             </div>
         </div>
 
+        <!-- DEMO: data-target placement -->
+        <div class="widget-section">
+            <div class="widget-label">data-target Placement</div>
+            <p style="color: #475569; font-size: 14px; margin-bottom: 16px;">
+                Use <code>data-target</code> to render the widget inside a specific element instead of after the script tag.
+            </p>
+
+            <div id="my-demo-slot" style="background: #e0f2fe; border: 2px solid #38bdf8; border-radius: 12px; padding: 24px; text-align: center;">
+                <!-- Widget will render here -->
+            </div>
+
+            <script
+              src="https://retell-widget-platform.vercel.app/api/widget-simple"
+              data-widget-id="your-widget-id-here"
+              data-target="my-demo-slot"
+              data-button-text="Talk to Agent">
+            </script>
+
+            <pre style="background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 16px; margin-top: 16px; text-align: left; font-size: 12px; overflow-x: auto;">&lt;div id="my-demo-slot"&gt;&lt;/div&gt;
+&lt;script
+  src=".../api/widget-simple"
+  data-widget-id="..."
+  data-target="my-demo-slot"&gt;
+&lt;/script&gt;</pre>
+        </div>
+
+        <!-- DEMO: RetellWidget.open() JS API -->
+        <div class="widget-section">
+            <div class="widget-label">RetellWidget.open() JS API</div>
+            <p style="color: #475569; font-size: 14px; margin-bottom: 16px;">
+                Trigger a widget call from any custom button or JS event using <code>RetellWidget.open(widgetId)</code>.
+            </p>
+
+            <!-- Hidden widget (still needed to load config) -->
+            <script
+              src="https://retell-widget-platform.vercel.app/api/widget-simple"
+              data-widget-id="your-widget-id-here"
+              data-button-text="">
+            </script>
+
+            <button
+              onclick="RetellWidget.open('your-widget-id-here')"
+              style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; padding: 14px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); transition: all 0.2s ease;"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(139, 92, 246, 0.5)'"
+              onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.4)'"
+            >
+              Custom CTA Button
+            </button>
+
+            <pre style="background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 16px; margin-top: 16px; text-align: left; font-size: 12px; overflow-x: auto;">&lt;script src=".../api/widget-simple"
+  data-widget-id="abc123"&gt;&lt;/script&gt;
+
+&lt;button onclick="RetellWidget.open('abc123')"&gt;
+  Custom CTA Button
+&lt;/button&gt;</pre>
+        </div>
+
         <div class="features">
             <div class="feature">
                 <div class="feature-icon">SEC</div>
