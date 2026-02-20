@@ -41,6 +41,8 @@ A multi-tenant SaaS platform for embedding Retell AI voice agents on websites th
 **Getting Started**
 - [Quick Start](#-quick-start) - Get running in 5 minutes
 - [Widget Integration](#-widget-integration) - Embed code examples
+- [Inline Placement (data-target)](#inline-placement-data-target) - Render inside a specific element
+- [JS Trigger API (RetellWidget.open)](#js-trigger-api-retellwidgetopen) - Programmatic call triggers
 - [Widget Customization](#-widget-customization) - Styling and appearance
 - [Site Builder Integration](#-site-builder-integration) - Wix, Squarespace, Webflow
 - [Password Protection](#password-protected-widget) - Optional security
@@ -260,6 +262,58 @@ document.getElementById('contactForm').addEventListener('submit', (e) => {
 });
 </script>
 ```
+
+### Inline Placement (data-target)
+
+By default the widget creates a new `<div>` and inserts it after the `<script>` tag. Use `data-target` to render the widget inside an existing element instead — useful for placing widgets inside hero sections, demo cards, or any specific layout slot.
+
+```html
+<!-- 1. Create a container wherever you want the widget -->
+<div id="my-demo-slot"></div>
+
+<!-- 2. Point the script at it with data-target -->
+<script
+  src="https://your-app.vercel.app/api/widget-simple"
+  data-widget-id="your-widget-id"
+  data-target="my-demo-slot">
+</script>
+```
+
+**Behavior:**
+- If the target element exists, the widget renders inside it (any `data-class` is added additively via `classList.add`)
+- If the target element is not found, a console warning is logged and the widget falls back to the default insert-after-script behavior
+- If `data-target` is not set, existing behavior is unchanged
+
+### JS Trigger API (RetellWidget.open)
+
+Trigger a widget's call flow programmatically from any custom button, link, or JavaScript event using `window.RetellWidget.open(widgetId)`. This lets you use your own styled CTA buttons while the widget script handles auth, config loading, and the call lifecycle.
+
+```html
+<!-- 1. Load the widget script (the default button still renders) -->
+<script
+  src="https://your-app.vercel.app/api/widget-simple"
+  data-widget-id="abc123">
+</script>
+
+<!-- 2. Trigger the call from your own button -->
+<button onclick="RetellWidget.open('abc123')">
+  Talk to Our Agent
+</button>
+```
+
+**Supported widget types:**
+| Widget Type | `RetellWidget.open()` |
+|---|---|
+| `inbound_web` | Starts browser voice call (contact form / access code prompts still apply) |
+| `outbound_web` | Starts outbound web call |
+| `inbound_phone` | Opens phone dialer |
+| `outbound_phone` | Not supported (requires phone number form) |
+
+**Queuing:** If `open()` is called before the widget script has finished initializing (e.g. script in `<head>`, button in `<body>`), the call is queued and automatically fired once initialization completes.
+
+**Guards:** The API ignores duplicate calls while a call is already connecting/connected, and logs errors for widgets in an error state or unknown IDs.
+
+**Works with both embed patterns:** Available on both `/api/widget-simple` (inline script) and `/widget.js` (site-builder) variants.
 
 ### Password-Protected Widget
 
